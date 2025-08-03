@@ -10,7 +10,8 @@ _Enterprise-grade monorepo platform with end-to-end type safety_
 
 ## 🏗️ Architecture Foundation
 
-**NestJS** • **TS-REST** • **TanStack Start** • **Prisma** • **Turborepo**
+**NestJS** • **TS-REST** • **TanStack Start** • **TanStack Query** • **Prisma**
+• **Turborepo**
 
 ---
 
