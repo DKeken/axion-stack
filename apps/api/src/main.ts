@@ -10,6 +10,8 @@ import { validateConfig } from './config/configuration';
 import { apiContract } from './contracts';
 import { PrismaService } from './infrastructure/database/prisma.service';
 
+console.log('Hello World');
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
