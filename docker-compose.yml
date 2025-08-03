@@ -1,0 +1,88 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nestjs_api
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis (optional, for future caching/sessions)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Application (development)
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: development
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
+      JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
+      CORS_ORIGIN: "*"
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: bun run start:dev
+
+  # API Application (production)
+  api-prod:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: production
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      JWT_ACCESS_SECRET: "${JWT_ACCESS_SECRET}"
+      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
+      CORS_ORIGIN: "${CORS_ORIGIN:-*}"
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: nestjs-api-network

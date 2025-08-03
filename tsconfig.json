@@ -1,0 +1,26 @@
+{
+  "extends": "./packages/_configs/eslint-config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      "@repo/*": ["packages/*/src", "packages/*"]
+    },
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "packages/**/*.js",
+    "packages/**/*.jsx",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/**/*.js",
+    "apps/**/*.jsx",
+    "*.ts",
+    "*.tsx"
+  ],
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.next/**", "**/.turbo/**", "**/coverage/**"]
+}

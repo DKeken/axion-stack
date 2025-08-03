@@ -1,0 +1,40 @@
+@import '@webtui/css/base.css';
+
+/* Utils */
+@import '@webtui/css/utils/box.css';
+
+/* Components */
+@import '@webtui/css/components/typography.css';
+@import '@webtui/css/components/button.css';
+@import '@webtui/css/components/badge.css';
+@import '@webtui/css/components/input.css';
+@import '@webtui/css/components/table.css';
+@import '@webtui/css/components/separator.css';
+@import '@webtui/css/components/spinner.css';
+
+/* Theme - можно раскомментировать когда установим catppuccin */
+/* @import '@webtui/theme-catppuccin'; */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base, utils, components;
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+
+  * {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+
+  html,
+  body {
+    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
+  }
+
+  .using-mouse * {
+    outline: none !important;
+  }
+}

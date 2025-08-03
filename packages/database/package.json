@@ -1,0 +1,44 @@
+{
+  "name": "@repo/database",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "echo '@repo/database dev mode (no-op)'",
+    "db:build": "bun run build.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
+    "db:seed": "bun run seed.ts",
+    "db:studio": "prisma studio",
+    "zod:generate": "prisma generate --generator zod"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.1",
+    "bun-plugin-dtsx": "^0.9.5",
+    "prisma": "^5.20.0",
+    "typescript": "^5.8.3",
+    "zod-prisma-types": "^3.1.8"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./generated/zod": {
+      "types": "./generated/zod/index.d.ts",
+      "default": "./generated/zod/index.js"
+    },
+    "./generated/zod/*": {
+      "types": "./generated/zod/*.d.ts",
+      "default": "./generated/zod/*.js"
+    }
+  }
+}

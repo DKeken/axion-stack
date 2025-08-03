@@ -1,17 +1,44 @@
 {
   "name": "something",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "bun db:setup && concurrently \"cd apps/api && bun dev\" \"cd apps/web && bun dev\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
+    "dev:full": "docker compose up postgres redis -d && bun dev",
+    "dev:stable": "docker compose up postgres redis -d && concurrently \"cd apps/api && bun dev\" \"cd apps/web && bun dev\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
+    "dev:turbo": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "start": "turbo run start",
+    "start:prod": "turbo run start:prod",
+    "api:start": "cd apps/api && bun run start",
+    "api:start:prod": "cd apps/api && bun run start:prod",
+    "api:build": "cd apps/api && bun run build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "db:up": "docker compose up postgres -d",
+    "db:down": "docker compose stop postgres",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "db:migrate": "turbo run db:migrate",
+    "db:seed": "turbo run db:seed",
+    "db:studio": "turbo run db:studio",
+    "db:setup": "turbo run db:setup",
+    "db:reset": "docker compose down postgres && docker volume rm postgres_data || true && docker compose up postgres -d && bun db:setup"
   },
   "devDependencies": {
+    "concurrently": "^9.2.0",
+    "eslint": "^9.32.0",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-sonarjs": "^3.0.4",
+    "globals": "^16.3.0",
     "prettier": "^3.6.2",
     "turbo": "^2.5.5",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "typescript-eslint": "^8.38.0"
   },
   "engines": {
     "node": ">=18"
@@ -19,6 +46,8 @@
   "packageManager": "bun@1.2.18",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "apps/**/*",
+    "packages/*",
+    "packages/**/*"
   ]
 }

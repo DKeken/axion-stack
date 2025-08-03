@@ -1,11 +1,11 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "ui": "tui",
+  "ui": "stream",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", ".output/**", "build/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -16,6 +16,54 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:prod": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false,
+      "dependsOn": ["^db:generate"]
+    },
+    "db:migrate": {
+      "cache": false,
+      "dependsOn": ["^db:generate"]
+    },
+    "db:seed": {
+      "cache": false,
+      "dependsOn": ["^db:push"]
+    },
+    "db:studio": {
+      "cache": false,
+      "persistent": true
+    },
+    "db:setup": {
+      "cache": false,
+      "dependsOn": ["db:generate", "db:push", "db:seed", "db:build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "db:build": {
+      "dependsOn": ["db:generate"],
+      "outputs": ["dist/**"]
     }
   }
 }
