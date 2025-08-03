@@ -1,2 +1,0 @@
-export const HTTP_PROXY_PROVIDER = Symbol('HTTP_PROXY_PROVIDER');
-export const HTTP_PROXY_CONFIG = Symbol('HTTP_PROXY_CONFIG');

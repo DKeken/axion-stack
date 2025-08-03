@@ -2,17 +2,11 @@ import { Controller, Get } from '@nestjs/common';
 
 import { Public } from '../auth/decorators/public.decorator';
 
-import type { IHttpProxyProvider } from '@/infrastructure/http-proxy';
-
 import { PrismaService } from '@/infrastructure/database/prisma.service';
-import { InjectHttpProxy } from '@/infrastructure/http-proxy';
 
 @Controller('health')
 export class HealthController {
-  constructor(
-    private readonly prisma: PrismaService,
-    @InjectHttpProxy() private readonly httpProxy: IHttpProxyProvider
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get()
   @Public()
@@ -25,17 +19,6 @@ export class HealthController {
       checks.database = { status: 'up' };
     } catch (error) {
       checks.database = {
-        status: 'down',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-
-    // HTTP Proxy health check (if enabled)
-    try {
-      const isHealthy = await this.httpProxy.healthCheck();
-      checks['http-proxy'] = { status: isHealthy ? 'up' : 'down' };
-    } catch (error) {
-      checks['http-proxy'] = {
         status: 'down',
         error: error instanceof Error ? error.message : 'Unknown error',
       };

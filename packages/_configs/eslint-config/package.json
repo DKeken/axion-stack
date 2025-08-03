@@ -12,7 +12,6 @@
     "README.md"
   ],
   "scripts": {
-    "dev": "echo '@repo/eslint-config dev mode (no-op)'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

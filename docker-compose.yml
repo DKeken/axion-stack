@@ -20,7 +20,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis (optional, for future caching/sessions)
+  # Redis for caching and sessions
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -45,6 +45,7 @@ services:
       NODE_ENV: development
       PORT: 3001
       DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      REDIS_URL: "redis://redis:6379"
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
       JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
       CORS_ORIGIN: "*"
@@ -68,6 +69,7 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      REDIS_URL: "redis://redis:6379"
       JWT_ACCESS_SECRET: "${JWT_ACCESS_SECRET}"
       JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
       CORS_ORIGIN: "${CORS_ORIGIN:-*}"
@@ -75,6 +77,8 @@ services:
       - "3001:3000"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     profiles:
       - production

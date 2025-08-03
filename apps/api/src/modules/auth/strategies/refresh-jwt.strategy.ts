@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import type { RefreshTokenPayload } from '../types/tokens.type';
+import type { RefreshTokenPayload, RefreshTokenData } from '../types/tokens.type';
 import type { AppConfig } from '@/config/configuration';
 
 import { PrismaService } from '@/infrastructure/database/prisma.service';
@@ -33,7 +33,7 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt'
   async validate(
     request: Request,
     payload: RefreshTokenPayload
-  ): Promise<{ id: string; jti: string }> {
+  ): Promise<{ refreshTokenData: RefreshTokenData }> {
     const { sub: userId, email, jti, familyId } = payload;
 
     // Verify user exists and is active
@@ -92,10 +92,9 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt'
       throw new UnauthorizedException('Refresh token expired');
     }
 
-    // Return user and token data for further processing
+    // Return the complete refresh token data
     return {
-      id: userId,
-      jti,
+      refreshTokenData: refreshToken,
     };
   }
 

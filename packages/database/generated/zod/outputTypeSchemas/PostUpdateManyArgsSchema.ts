@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Prisma } from '../../../node_modules/.prisma/client';
+import type { Prisma } from '@prisma/client';
 import { PostUpdateManyMutationInputSchema } from '../inputTypeSchemas/PostUpdateManyMutationInputSchema'
 import { PostUncheckedUpdateManyInputSchema } from '../inputTypeSchemas/PostUncheckedUpdateManyInputSchema'
 import { PostWhereInputSchema } from '../inputTypeSchemas/PostWhereInputSchema'

@@ -4,9 +4,11 @@ import * as React from 'react';
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
+import { AuthProvider } from '~/components/auth/auth-provider';
 import { DefaultCatchBoundary } from '~/components/default-catch-boundary';
 import { NotFound } from '~/components/not-found';
 import { QueryProvider } from '~/components/query-provider';
+import { Toaster } from '~/components/ui/toaster';
 import appCss from '~/styles/app.css?url';
 import { seo } from '~/utils/seo';
 
@@ -47,12 +49,6 @@ export const Route = createRootRoute({
       { rel: 'manifest', href: '/site.webmanifest', color: '#fffff' },
       { rel: 'icon', href: '/favicon.ico' },
     ],
-    scripts: [
-      {
-        src: '/customScript.js',
-        type: 'text/javascript',
-      },
-    ],
   }),
   errorComponent: DefaultCatchBoundary,
   notFoundComponent: () => <NotFound />,
@@ -61,14 +57,17 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html data-webtui-theme="dark">
+    <html lang='en' className='size-full'>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className='size-full'>
         <QueryProvider>
-          {children}
-          <TanStackRouterDevtools position='bottom-right' />
+          <AuthProvider>
+            {children}
+            <Toaster />
+            <TanStackRouterDevtools position='bottom-right' />
+          </AuthProvider>
         </QueryProvider>
         <Scripts />
       </body>

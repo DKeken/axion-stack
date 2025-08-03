@@ -4,10 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "dev": "bun db:setup && concurrently \"cd apps/api && bun dev\" \"cd apps/web && bun dev\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
-    "dev:full": "docker compose up postgres redis -d && bun dev",
-    "dev:stable": "docker compose up postgres redis -d && concurrently \"cd apps/api && bun dev\" \"cd apps/web && bun dev\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
-    "dev:turbo": "turbo run dev",
+    "dev": "kill -9 $(lsof -ti:3000,3001) 2>/dev/null || true && turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
@@ -30,7 +27,6 @@
     "db:reset": "docker compose down postgres && docker volume rm postgres_data || true && docker compose up postgres -d && bun db:setup"
   },
   "devDependencies": {
-    "concurrently": "^9.2.0",
     "eslint": "^9.32.0",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-sonarjs": "^3.0.4",

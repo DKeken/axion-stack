@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Prisma } from '../../../node_modules/.prisma/client';
+import type { Prisma } from '@prisma/client';
 import { UserCreateManyInputSchema } from '../inputTypeSchemas/UserCreateManyInputSchema'
 
 export const UserCreateManyAndReturnArgsSchema: z.ZodType<Prisma.UserCreateManyAndReturnArgs> = z.object({

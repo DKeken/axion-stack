@@ -9,7 +9,6 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { validationSchema } from './config/validation';
 import { PrismaService } from './infrastructure/database/prisma.service';
-import { HttpProxyModule } from './infrastructure/http-proxy';
 import { AuthModule } from './modules/auth/auth.module';
 import { AccessTokenGuard } from './modules/auth/guards/access-token.guard';
 import { HealthModule } from './modules/health/health.module';
@@ -33,13 +32,6 @@ import { UsersModule } from './modules/users/users.module';
           },
         ],
       }),
-    }),
-
-    // HTTP Proxy (extension point)
-    HttpProxyModule.forRoot({
-      config: {
-        enabled: false, // Disabled by default
-      },
     }),
 
     // Feature modules

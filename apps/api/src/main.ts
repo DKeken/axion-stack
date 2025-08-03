@@ -3,14 +3,13 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { generateOpenApi } from '@ts-rest/open-api';
 import cookieParser from 'cookie-parser';
+import express from 'express';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
 import { validateConfig } from './config/configuration';
 import { apiContract } from './contracts';
 import { PrismaService } from './infrastructure/database/prisma.service';
-
-console.log('Hello World');
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -33,6 +32,22 @@ async function bootstrap() {
     })
   );
 
+  // JSON body parser configuration for ts-rest compatibility
+  app.use(
+    express.json({
+      limit: '50mb',
+      strict: false, // Allow non-strict JSON parsing
+      type: ['application/json', 'text/plain'], // Accept both content types
+    })
+  );
+
+  app.use(
+    express.urlencoded({
+      extended: true,
+      limit: '50mb',
+    })
+  );
+
   // Cookie parser for refresh tokens
   app.use(cookieParser());
 
@@ -48,12 +63,17 @@ async function bootstrap() {
   // TS-REST manages versioning through contract paths like /api/v1/users
 
   // Global validation pipe
+  // Note: ts-rest handles validation internally with Zod schemas
+  // This pipe handles non-ts-rest endpoints
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
       disableErrorMessages: config.NODE_ENV === 'production',
+      skipMissingProperties: false,
+      skipNullProperties: false,
+      skipUndefinedProperties: false,
       validationError: {
         target: false,
         value: false,

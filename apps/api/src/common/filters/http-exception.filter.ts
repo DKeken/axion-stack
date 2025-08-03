@@ -1,4 +1,5 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Logger } from '@nestjs/common';
+
 import type { Request, Response } from 'express';
 
 export interface ErrorResponse {
@@ -14,14 +15,33 @@ export interface ErrorResponse {
 /**
  * Global HTTP exception filter for consistent error responses
  */
-@Catch(HttpException)
+@Catch(HttpException, SyntaxError)
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception: HttpException | SyntaxError, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+
+    // Handle JSON syntax errors specifically
+    if (exception instanceof SyntaxError) {
+      const errorResponse: ErrorResponse = {
+        statusCode: 400,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        method: request.method,
+        message: 'JSON Parse error: Invalid JSON format',
+        error: 'Bad Request',
+      };
+
+      this.logger.warn(
+        `${request.method} ${request.url} - 400 - JSON Parse error: ${exception.message}`
+      );
+      response.status(400).json(errorResponse);
+      return;
+    }
+
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
 

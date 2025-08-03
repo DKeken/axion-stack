@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Prisma } from '../../../node_modules/.prisma/client';
+import type { Prisma } from '@prisma/client';
 import { UserIncludeSchema } from '../inputTypeSchemas/UserIncludeSchema'
 import { UserWhereInputSchema } from '../inputTypeSchemas/UserWhereInputSchema'
 import { UserOrderByWithRelationInputSchema } from '../inputTypeSchemas/UserOrderByWithRelationInputSchema'

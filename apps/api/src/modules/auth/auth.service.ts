@@ -14,7 +14,7 @@ import type { AppConfig } from '@/config/configuration';
 import type { LoginDto, RegisterDto, UserResponse } from '@/contracts/auth.contract';
 
 import { PrismaService } from '@/infrastructure/database/prisma.service';
-import { withTransaction } from '@/infrastructure/database/transaction';
+import { withTransaction, type DatabaseClient } from '@/infrastructure/database/transaction';
 
 @Injectable()
 export class AuthService {
@@ -56,7 +56,7 @@ export class AuthService {
         },
       });
 
-      const tokens = await this.generateTokenPair(user.id, user.email, fingerprint, this.prisma);
+      const tokens = await this.generateTokenPair(user.id, user.email, fingerprint, tx);
 
       return {
         user: {
@@ -135,7 +135,7 @@ export class AuthService {
       }
 
       // Generate new token pair with same family ID
-      return this.generateTokenPair(user.id, user.email, fingerprint, this.prisma, familyId);
+      return this.generateTokenPair(user.id, user.email, fingerprint, tx, familyId);
     });
   }
 
@@ -162,7 +162,7 @@ export class AuthService {
     userId: string,
     email: string,
     fingerprint?: string,
-    tx = this.prisma,
+    tx: DatabaseClient = this.prisma,
     existingFamilyId?: string
   ): Promise<TokenPair> {
     const accessSecret = this.configService.get('JWT_ACCESS_SECRET', { infer: true });
@@ -192,15 +192,13 @@ export class AuthService {
       exp: Math.floor(Date.now() / 1000) + this.parseExpiresIn(refreshExpiresIn || '7d'),
     };
 
-    // Generate tokens
+    // Generate tokens (exp already set in payload, don't use expiresIn option)
     const accessToken = this.jwtService.sign(accessPayload, {
       secret: accessSecret,
-      expiresIn: accessExpiresIn,
     });
 
     const refreshToken = this.jwtService.sign(refreshPayload, {
       secret: refreshSecret,
-      expiresIn: refreshExpiresIn,
     });
 
     // Store refresh token in database

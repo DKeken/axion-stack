@@ -11,8 +11,8 @@ export function createQueryClient() {
         retry: (failureCount, error) => {
           // Don't retry on 4xx errors (client errors)
           if (error instanceof Error && 'status' in error) {
-            const { status } = error as any;
-            if (status >= 400 && status < 500) {
+            const status = (error as { status?: number })?.status;
+            if (status !== undefined && status >= 400 && status < 500) {
               return false;
             }
           }
