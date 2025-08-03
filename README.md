@@ -41,7 +41,7 @@ modern tooling and best practices.
 
 ### Backend Infrastructure
 
-**NestJS** • **Prisma ORM** • **PostgreSQL** • **Redis** • **RabbitMQ** • **JWT
+**NestJS** • **Prisma ORM** • **PostgreSQL** • **Redis** • **JWT
 Authentication**
 
 ### Frontend Platform
