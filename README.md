@@ -8,10 +8,10 @@ _Enterprise-grade monorepo platform with end-to-end type safety_
 [![GitHub stars](https://img.shields.io/github/stars/DKeken/axion-stack?style=social)](https://github.com/DKeken/axion-stack/stargazers)
 [![GitHub downloads](https://img.shields.io/github/downloads/DKeken/axion-stack/total?color=brightgreen)](https://github.com/DKeken/axion-stack/releases)
 
-## 🏗️ Architecture Foundation
+## 🏗️ Core Technologies
 
 **NestJS** • **TS-REST** • **TanStack Start** • **TanStack Query** • **Prisma**
-• **Turborepo**
+• **Turborepo** • **Bun Runtime**
 
 ---
 
@@ -22,44 +22,41 @@ applications with complete type safety from database to client. Designed to
 deliver maximum reliability, performance, and developer experience through
 modern tooling and best practices.
 
-### 🚀 Core Advantages
+### 🚀 Key Features
 
-- **🛡️ End-to-End Type Safety** — Bulletproof type system with compile-time
-  guarantees and zero runtime type errors
-- **⚡ Ultra-High Performance** — Native Bun runtime optimizations with
-  sub-millisecond startup times
+- **🛡️ End-to-End Type Safety** — Complete type system from database to client
+  with compile-time guarantees
+- **⚡ Ultra-High Performance** — Native Bun runtime with sub-millisecond
+  startup times
 - **🔄 Intelligent Build System** — Advanced Turborepo caching with
   dependency-aware incremental builds
 - **🎯 Code Generation Pipeline** — Automated type generation from Prisma schema
   to client interfaces
 - **🏗️ Scalable Architecture** — Cloud-native microservice patterns with
   monorepo developer experience
-- **🔒 Security-First Design** — Built-in authentication, authorization, and
+- **🔒 Security-First Design** — Built-in JWT authentication, authorization, and
   security best practices
 
 ## 🛠️ Technology Stack
 
-### Backend Infrastructure
+### Backend
 
 **NestJS** • **Prisma ORM** • **PostgreSQL** • **Redis** • **JWT
 Authentication**
 
-### Frontend Platform
+### Frontend
 
 **TanStack Start** • **React 19** • **TailwindCSS** • **Radix UI** • **Zustand**
 • **React Query**
 
-### Development & Operations
+### DevOps
 
-**Bun Runtime** • **Turborepo** • **TypeScript 5.6+** • **Docker** • **ESLint**
-• **Prettier** • **Husky**
+**Docker** • **TypeScript 5.6+** • **ESLint** • **Prettier** • **Husky**
 
 ---
 
 ## ⚙️ Prerequisites
 
-### System Requirements
-
-- **Bun** ≥ 1.2.18 _(Primary runtime engine)_
-- **Docker** & **Docker Compose** _(Containerized development environment)_
-- **Node.js** ≥ 20.0.0 _(Fallback compatibility layer)_
+- **Bun** ≥ 1.2.18 _(Primary runtime)_
+- **Docker** & **Docker Compose** _(Development environment)_
+- **Node.js** ≥ 20.0.0 _(Fallback compatibility)_
