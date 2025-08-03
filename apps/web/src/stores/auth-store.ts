@@ -24,6 +24,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isRefreshing: boolean;
+  isInitialized: boolean;
   error: ErrorType;
 }
 
@@ -64,6 +65,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isLoading: false,
       isRefreshing: false,
+      isInitialized: false,
       error: null,
 
       // Auth operations
@@ -278,6 +280,7 @@ export const useAuthStore = create<AuthStore>()(
           isLoading: false,
           isRefreshing: false,
           error: null,
+          // Keep isInitialized as true since app is already initialized
         });
 
         // Redirect to login in production
@@ -293,9 +296,14 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       initialize: async () => {
-        // Always try to load profile on app initialization
-        // This ensures user data is fresh from server
-        await get().loadProfile();
+        try {
+          // Always try to load profile on app initialization
+          // This ensures user data is fresh from server
+          await get().loadProfile();
+        } finally {
+          // Mark as initialized regardless of success/failure
+          set({ isInitialized: true });
+        }
       },
     }),
     {
@@ -318,6 +326,7 @@ export const useAuth = () => {
       isAuthenticated: state.isAuthenticated,
       isLoading: state.isLoading,
       isRefreshing: state.isRefreshing,
+      isInitialized: state.isInitialized,
       error: state.error,
       login: state.login,
       register: state.register,

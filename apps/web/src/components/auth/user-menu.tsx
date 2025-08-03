@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 import { useRouter } from '@tanstack/react-router';
 import { LogOut, Settings, User } from 'lucide-react';
 
@@ -128,10 +126,10 @@ export function UserMenu({ className }: UserMenuProps) {
 
 // Компонент для отображения в навигации
 export function UserNavigation() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isInitialized } = useAuth();
   const router = useRouter();
 
-  if (isLoading) {
+  if (!isInitialized || isLoading) {
     return (
       <div className='flex items-center space-x-2'>
         <div className='h-8 w-8 rounded-full bg-muted animate-pulse' />
