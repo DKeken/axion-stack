@@ -1,3 +1,13 @@
+## [1.0.3](https://github.com/DKeken/axion-stack/compare/v1.0.2...v1.0.3) (2025-08-22)
+
+### 📚 Documentation
+
+* update README.md to include monitoring and load testing features with Prometheus, Grafana, and Playwright [skip ci] ([9b047d8](https://github.com/DKeken/axion-stack/commit/9b047d8432d2e5ea7a42c3f6e9e406a983c3b393))
+
+### 🔧 Chores
+
+* add "verbatimModuleSyntax" option to tsconfig files across multiple services and packages ([aaa76b9](https://github.com/DKeken/axion-stack/commit/aaa76b9153f78645bb088f463c2d9c5dee8c93c6))
+
 ## [1.0.2](https://github.com/DKeken/axion-stack/compare/v1.0.1...v1.0.2) (2025-08-22)
 
 ### 🔧 Chores
