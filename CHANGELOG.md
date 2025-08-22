@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/DKeken/axion-stack/compare/v1.0.3...v1.0.4) (2025-08-22)
+
+### 🔨 Code Refactoring
+
+* enhance logging and error handling in services and Redis integration ([51546e0](https://github.com/DKeken/axion-stack/commit/51546e01ddb5c093d5672e4fa753008bd0aeda5f))
+
 ## [1.0.3](https://github.com/DKeken/axion-stack/compare/v1.0.2...v1.0.3) (2025-08-22)
 
 ### 📚 Documentation
