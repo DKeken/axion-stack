@@ -6,6 +6,7 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true,
 
     // Строгие настройки TypeScript (смягчены для сгенерированного кода)
     "strict": true,
