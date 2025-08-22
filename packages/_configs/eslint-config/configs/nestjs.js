@@ -79,7 +79,7 @@ export default [
 
       // Nullish coalescing - отключено, || тоже нормально
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      
+
       // Отключаем проблемные правила полностью
       '@typescript-eslint/no-namespace': 'off',
 
