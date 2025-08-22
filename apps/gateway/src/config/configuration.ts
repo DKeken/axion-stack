@@ -60,7 +60,11 @@ export function validateConfig(): AppConfig {
 
   if (!result.success) {
     const errors = result.error.format();
-    throw new Error(`Configuration validation failed:\n${JSON.stringify(errors, null, 2)}`);
+    // Log detailed errors only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Configuration validation failed:', errors);
+    }
+    throw new Error('Configuration validation failed. Check environment variables.');
   }
 
   return result.data;

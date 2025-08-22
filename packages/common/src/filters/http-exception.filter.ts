@@ -29,8 +29,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    console.log('exception', exception);
-
     // Handle JSON syntax errors specifically
     if (exception instanceof SyntaxError) {
       const errorResponse: ErrorResponse = {

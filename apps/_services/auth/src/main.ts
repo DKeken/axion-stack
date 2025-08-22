@@ -28,7 +28,9 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(process.env.PORT ?? 3002);
 
-  console.log(`Auth Service is running on: ${await app.getUrl()}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Auth Service is running on: ${await app.getUrl()}`);
+  }
 }
 
 bootstrap().catch((error) => {

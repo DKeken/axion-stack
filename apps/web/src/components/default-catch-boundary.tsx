@@ -17,7 +17,10 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     select: (state) => state.id === rootRouteId,
   });
 
-  console.error('DefaultCatchBoundary Error:', error);
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.error('DefaultCatchBoundary Error:', error);
+  }
 
   return (
     <div className='flex flex-1 items-center justify-center min-h-[60vh]'>

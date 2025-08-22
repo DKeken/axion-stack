@@ -37,7 +37,14 @@ export class ApiCacheService {
 
       const serializedData = options.skipSerialization ? (data as string) : JSON.stringify(data);
 
-      await this.redisService.set(cacheKey, serializedData, ttl);
+      // Используем новый метод с регистрацией
+      await this.redisService.setWithRegistry(
+        cacheKey,
+        serializedData,
+        ttl,
+        keyParams.module,
+        keyParams.operation
+      );
 
       this.logger.debug(`Cached API response: ${cacheKey} (TTL: ${ttl}s)`);
     } catch (error) {
@@ -74,12 +81,10 @@ export class ApiCacheService {
    */
   async invalidateModule(module: string): Promise<void> {
     try {
-      // Поскольку cache-manager не поддерживает keys по паттерну,
-      // используем более простой подход - очищаем весь кэш
-      // В продакшене можно вести отдельный набор ключей для каждого модуля
-      await this.redisService.reset();
+      // Используем точную инвалидацию через реестр ключей
+      const invalidatedCount = await this.redisService.invalidateModule(module);
 
-      this.logger.debug(`Invalidated cache for module: ${module}`);
+      this.logger.debug(`Invalidated ${invalidatedCount} cache entries for module: ${module}`);
     } catch (error) {
       this.logger.error(`Failed to invalidate cache for module ${module}:`, error);
     }
@@ -90,11 +95,9 @@ export class ApiCacheService {
    */
   async invalidateOperation(module: string, operation: string): Promise<void> {
     try {
-      // Аналогично - очищаем весь кэш
-      // TODO: Реализовать более точную инвалидацию когда будет поддержка pattern keys
-      await this.redisService.reset();
+      const invalidatedCount = await this.redisService.invalidateOperation(module, operation);
 
-      this.logger.debug(`Invalidated cache for ${module}.${operation}`);
+      this.logger.debug(`Invalidated ${invalidatedCount} cache entries for ${module}.${operation}`);
     } catch (error) {
       this.logger.error(`Failed to invalidate cache for ${module}.${operation}:`, error);
     }
@@ -206,5 +209,37 @@ export class ApiCacheService {
     };
 
     return ttlMap[module]?.[operation] ?? this.defaultTTL;
+  }
+
+  /**
+   * Получить статистику кэша
+   */
+  getCacheStats() {
+    return this.redisService.getRegistryStats();
+  }
+
+  /**
+   * Инвалидировать кэш пользователя (все ключи содержащие userId)
+   */
+  async invalidateUser(userId: string): Promise<void> {
+    try {
+      let invalidatedCount = 0;
+
+      // Получаем все ключи из всех модулей и проверяем наличие userId
+      for (const [module] of this.redisService['keyRegistry'].modules) {
+        const moduleKeys = this.redisService['keyRegistry'].modules.get(module);
+        if (moduleKeys) {
+          const userKeys = Array.from(moduleKeys).filter((key) => key.includes(`user_${userId}`));
+          if (userKeys.length > 0) {
+            await this.redisService.delMultiple(userKeys);
+            invalidatedCount += userKeys.length;
+          }
+        }
+      }
+
+      this.logger.debug(`Invalidated ${invalidatedCount} cache entries for user: ${userId}`);
+    } catch (error) {
+      this.logger.error(`Failed to invalidate cache for user ${userId}:`, error);
+    }
   }
 }
