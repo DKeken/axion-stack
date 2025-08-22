@@ -37,6 +37,9 @@ jobs:
       - name: Generate Prisma
         run: bun run db:generate
 
+      - name: Build database package
+        run: cd packages/database && bun run db:build
+
       - name: Lint
         run: bun run lint
 
