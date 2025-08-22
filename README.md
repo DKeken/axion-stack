@@ -56,11 +56,6 @@ generation, and enterprise-grade security patterns.
                    │   User      │
                    │  Service    │
                    └─────────────┘    
-                           │
-                   ┌─────────────┐
-                   │  Database   │
-                   │ PostgreSQL  │
-                   └─────────────┘    
 
        ┌─────────────┐        ┌─────────────┐
        │  RabbitMQ   │        │    Redis    │
@@ -72,6 +67,18 @@ generation, and enterprise-grade security patterns.
    │   All services use   │   │   All services   │
    │   RabbitMQ for comm  │   │  access Redis    │
    └──────────────────────┘   └──────────────────┘
+             ▲
+             │
+       ┌─────────────┐
+       │  Database   │
+       │ PostgreSQL  │
+       └─────────────┘
+             ▲
+             │
+   ┌─────────┴───────────┐
+   │   All services can  │
+   │   query PostgreSQL  │
+   └─────────────────────┘
 
 ```
 
