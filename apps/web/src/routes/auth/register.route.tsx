@@ -56,7 +56,11 @@ function RegisterPage() {
       const email = String(formData.get('email') ?? '');
       const passwordValue = String(formData.get('password') ?? '');
       const name = String(formData.get('name') ?? '');
-      await register({ email, password: passwordValue, name: name || undefined });
+      await register({
+        email,
+        password: passwordValue,
+        ...(name.trim() && { name: name.trim() }),
+      });
       await router.navigate({ to: '/' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');

@@ -35,7 +35,7 @@ export interface CacheParams {
 }
 
 // Cache key builder utility with improved structure
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+
 export class CacheKeyBuilder {
   private static readonly SEPARATOR = ':';
   private static readonly NAMESPACE_SEPARATOR = '@';
@@ -129,7 +129,7 @@ export class CacheKeyBuilder {
     if (!namespace) return null;
 
     const parts = namespace.split(CacheKeyBuilder.NAMESPACE_SEPARATOR);
-    return parts.length > 1 ? parts[1] : null;
+    return parts.length > 1 ? (parts[1] ?? null) : null;
   }
 
   /**

@@ -13,13 +13,25 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
 
-    // Best practices
+    // Строгие настройки TypeScript
     "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+
+    // Качество кода (смягчены для совместимости с Prisma)
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
 
-    // Some stricter flags (disabled by default)
+    // Включаем проверки неиспользуемых переменных (отключены для совместимости)
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
@@ -38,5 +50,6 @@
       "@repo/database": ["../../packages/database/src"],
       "@repo/infrastructure": ["../../packages/infrastructure/src"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "../../packages/database/src/generated/**/*"]
 }

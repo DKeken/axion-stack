@@ -1,0 +1,40 @@
+{
+  "name": "@repo/playwright",
+  "version": "1.0.0",
+  "description": "E2E tests for Axion Stack",
+  "main": "index.js",
+  "scripts": {
+    "test": "../../node_modules/.bin/playwright test",
+    "test:chromium": "../../node_modules/.bin/playwright test --project=chromium",
+    "test:firefox": "../../node_modules/.bin/playwright test --project=firefox",
+    "test:webkit": "../../node_modules/.bin/playwright test --project=webkit",
+    "test:mobile": "../../node_modules/.bin/playwright test --project=\"Mobile Chrome\"",
+    "test:auth": "../../node_modules/.bin/playwright test tests/auth.spec.ts --project=chromium",
+    "test:headed": "../../node_modules/.bin/playwright test --headed --project=chromium",
+    "test:debug": "../../node_modules/.bin/playwright test --debug --project=chromium",
+    "test:ui": "../../node_modules/.bin/playwright test --ui",
+    "show-report": "../../node_modules/.bin/playwright show-report --port=9324",
+    "load:auth": "artillery run load-tests/auth-load.ts",
+    "load:smoke": "artillery run load-tests/smoke-test.ts",
+    "load:stress": "artillery run load-tests/stress-test.ts",
+    "load:combined": "artillery run load-tests/combined-load.ts",
+    "load:report": "artillery report"
+  },
+  "keywords": [
+    "e2e",
+    "testing",
+    "playwright",
+    "axion-stack"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^22.13.11",
+    "artillery": "^2.0.10",
+    "artillery-engine-playwright": "^1.1.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}

@@ -82,17 +82,18 @@ function extractSize(
   box: BoxSizesKey,
   sizeType: keyof ResizeObserverSize
 ): number | undefined {
-  if (!entry[box]) {
+  const boxValue = entry[box];
+  if (!boxValue) {
     if (box === 'contentBoxSize') {
       return entry.contentRect[sizeType === 'inlineSize' ? 'width' : 'height'];
     }
     return undefined;
   }
 
-  return Array.isArray(entry[box])
-    ? entry[box][0][sizeType]
+  return Array.isArray(boxValue)
+    ? boxValue[0]?.[sizeType]
     : // @ts-expect-error Support Firefox's non-standard behavior
-      (entry[box][sizeType] as number);
+      (boxValue[sizeType] as number);
 }
 
 export type { Size, UseResizeObserverOptions };

@@ -22,7 +22,11 @@ export function Provider({ children }: { children: React.ReactNode }) {
 
   const navigate = useCallback(
     (to: string, options?: RouterNavigateOptions) => {
-      void router.navigate({ to, replace: options?.replace });
+      const navigateOptions: { to: string; replace?: boolean | undefined } = { to };
+      if (options?.replace !== undefined) {
+        navigateOptions.replace = options.replace;
+      }
+      void router.navigate(navigateOptions);
     },
     [router]
   );

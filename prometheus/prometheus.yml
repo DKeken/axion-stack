@@ -1,0 +1,82 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: "axion-stack-monitor"
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Pushgateway for batch metrics
+  - job_name: "pushgateway"
+    static_configs:
+      - targets: ["pushgateway:9091"]
+    honor_labels: true
+    metrics_path: /metrics
+
+  # API Gateway Service
+  - job_name: "api-gateway"
+    static_configs:
+      - targets: ["api:3001"]
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Auth Microservice
+  - job_name: "auth-service"
+    static_configs:
+      - targets: ["auth-service:3002"]
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # User Microservice
+  - job_name: "user-service"
+    static_configs:
+      - targets: ["user-service:3003"]
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # PostgreSQL Exporter
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Redis Exporter
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # RabbitMQ Management Metrics (built-in Prometheus support)
+  - job_name: "rabbitmq"
+    static_configs:
+      - targets: ["rabbitmq:15692"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Node Exporter for system metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s

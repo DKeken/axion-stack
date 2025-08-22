@@ -1,7 +1,16 @@
 {
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"],
   "compilerOptions": {
+    // Строгие настройки TypeScript
     "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "useUnknownInCatchVariables": true,
+
+    // React и модули
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "module": "ESNext",
@@ -9,15 +18,24 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
     "target": "ES2022",
     "allowJs": true,
+
+    // Качество кода (смягчены для совместимости)
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
       "@web/*": ["./src/*"]
     },
     "noEmit": true
-  }
+  },
+  "exclude": ["node_modules", "dist", ".output", "../../packages/database/src/generated/**/*"]
 }

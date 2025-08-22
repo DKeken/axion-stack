@@ -35,7 +35,7 @@ export default [
   ...createNestJSConfig().map((config) => ({
     ...config,
     files: [
-      'apps/api/**/*.{ts,js}',
+      'apps/gateway/**/*.{ts,js}',
       'apps/auth-service/**/*.{ts,js}',
       'apps/user-service/**/*.{ts,js}',
       'packages/infrastructure/**/*.{ts,js}',
@@ -49,6 +49,20 @@ export default [
   ...createReactConfig().map((config) => ({
     ...config,
     files: ['apps/web/**/*.{ts,tsx,js,jsx}'],
+  })),
+
+  // Playwright-specific configuration (separate from NestJS)
+  ...createBaseConfig().map((config) => ({
+    ...config,
+    files: ['apps/playwright/**/*.{ts,js}'],
+    languageOptions: {
+      ...config.languageOptions,
+      parserOptions: {
+        ...config.languageOptions?.parserOptions,
+        project: ['apps/playwright/tsconfig.json'],
+        tsconfigRootDir: process.cwd(),
+      },
+    },
   })),
 
   // Package-specific configurations - TypeScript files only

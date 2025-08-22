@@ -69,8 +69,8 @@ export class PrismaService
   async onModuleInit(): Promise<void> {
     // Retry logic for robust connection (inspired by production hardening best practices)
     // Ref: Hardening Prisma for Production (retry + graceful shutdown)
-    const maxRetries = parseInt(process.env.DB_CONNECT_RETRIES ?? '3', 10);
-    const retryDelayMs = parseInt(process.env.DB_CONNECT_DELAY_MS ?? '2000', 10);
+    const maxRetries = parseInt(process.env['DB_CONNECT_RETRIES'] ?? '3', 10);
+    const retryDelayMs = parseInt(process.env['DB_CONNECT_DELAY_MS'] ?? '2000', 10);
 
     // In development, store global reference to prevent connection leaks
     if (!this.isProduction) {

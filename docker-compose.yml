@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # PostgreSQL Database
   postgres:
@@ -70,6 +68,7 @@ services:
     ports:
       - "5672:5672" # AMQP port
       - "15672:15672" # Management UI port
+      - "15692:15692" # Prometheus metrics port
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
@@ -78,12 +77,76 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    command: >
+      sh -c "
+        rabbitmq-plugins enable rabbitmq_prometheus rabbitmq_management &&
+        rabbitmq-server
+      "
+
+  # Prometheus - Metrics Collection and Storage
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Pushgateway - Metrics Gateway for Batch Jobs
+  pushgateway:
+    image: prom/pushgateway:latest
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+    volumes:
+      - pushgateway_data:/var/lib/pushgateway
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9091/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - Metrics Visualization Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3333:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # API Application (development)
   api:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
+      dockerfile: apps/gateway/Dockerfile
       target: development
     restart: unless-stopped
     environment:
@@ -100,10 +163,11 @@ services:
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
       JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
       CORS_ORIGIN: "*"
+      PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
     ports:
       - "3001:3001"
     volumes:
-      - ./apps/api:/app
+      - ./apps/gateway:/app
       - /app/node_modules
     depends_on:
       postgres:
@@ -112,13 +176,15 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      pushgateway:
+        condition: service_healthy
     command: bun run start:dev
 
   # Auth Service (microservice)
   auth-service:
     build:
       context: .
-      dockerfile: apps/auth-service/Dockerfile
+      dockerfile: apps/_services/auth/Dockerfile
       target: development
     restart: unless-stopped
     environment:
@@ -135,10 +201,11 @@ services:
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
       JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
       CORS_ORIGIN: "*"
+      PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
     ports:
       - "3002:3002"
     volumes:
-      - ./apps/auth-service:/app
+      - ./apps/_services/auth:/app
       - /app/node_modules
     depends_on:
       postgres:
@@ -147,13 +214,15 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      pushgateway:
+        condition: service_healthy
     command: bun run start:dev
 
   # User Service (microservice)
   user-service:
     build:
       context: .
-      dockerfile: apps/user-service/Dockerfile
+      dockerfile: apps/_services/user/Dockerfile
       target: development
     restart: unless-stopped
     environment:
@@ -168,10 +237,11 @@ services:
       REDIS_TTL: 3600
       RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
       CORS_ORIGIN: "*"
+      PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
     ports:
       - "3003:3003"
     volumes:
-      - ./apps/user-service:/app
+      - ./apps/_services/user:/app
       - /app/node_modules
     depends_on:
       postgres:
@@ -180,13 +250,74 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      pushgateway:
+        condition: service_healthy
     command: bun run start:dev
+
+  # Node Exporter - System Metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Exporter - Redis Metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
+      REDIS_PASSWORD: "password"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9121/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Exporter - Database Metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    restart: unless-stopped
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:password@postgres:5432/nestjs_api?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9187/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
   rabbitmq_logs:
+  prometheus_data:
+  grafana_data:
+  pushgateway_data:
 
 networks:
   default:

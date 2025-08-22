@@ -10,7 +10,7 @@ export class AccessTokenGuard extends AuthGuard('access-jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  override canActivate(context: ExecutionContext) {
     // Check if route is marked as public
     const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
       context.getHandler(),
@@ -28,7 +28,7 @@ export class AccessTokenGuard extends AuthGuard('access-jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest<TUser = AuthUserResponse>(
+  override handleRequest<TUser = AuthUserResponse>(
     err: Error | null,
     user: AuthUserResponse | null,
     info: { message?: string; name?: string } | undefined,

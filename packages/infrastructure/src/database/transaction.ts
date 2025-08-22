@@ -21,7 +21,7 @@ export interface OffsetPaginationOptions {
  */
 export interface PaginationResult<T> {
   items: T[];
-  nextCursor?: string | null;
+  nextCursor?: string | null | undefined;
   hasMore: boolean;
   total?: number;
 }
@@ -47,11 +47,20 @@ export async function withTransaction<T>(
     isolationLevel?: 'ReadUncommitted' | 'ReadCommitted' | 'RepeatableRead' | 'Serializable';
   }
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => fn(tx), {
+  const transactionOptions: {
+    maxWait?: number;
+    timeout?: number;
+    isolationLevel?: 'ReadUncommitted' | 'ReadCommitted' | 'RepeatableRead' | 'Serializable';
+  } = {
     maxWait: options?.maxWait ?? 5000, // default 5 seconds
     timeout: options?.timeout ?? 10000, // default 10 seconds
-    isolationLevel: options?.isolationLevel,
-  });
+  };
+
+  if (options?.isolationLevel !== undefined) {
+    transactionOptions.isolationLevel = options.isolationLevel;
+  }
+
+  return prisma.$transaction(fn, transactionOptions);
 }
 
 /**

@@ -114,7 +114,13 @@ export abstract class BaseRepository<
   protected parseCursor(cursor: string): { createdAt: string; id: string } {
     try {
       const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
-      const [createdAt, id] = decoded.split(':');
+      const parts = decoded.split(':');
+      const [createdAt, id] = parts;
+
+      if (!createdAt || !id) {
+        throw new Error('Invalid cursor format');
+      }
+
       return { createdAt, id };
     } catch {
       throw new Error('Invalid cursor format');

@@ -90,13 +90,11 @@ export function Topbar({ showLogo = false }: { showLogo?: boolean }) {
                   <DropdownItem
                     key={item.to}
                     isDisabled={Boolean(item.disabled)}
-                    onPress={
-                      item.disabled
-                        ? undefined
-                        : () => {
-                            void router.navigate({ to: item.to });
-                          }
-                    }
+                    {...(!item.disabled && {
+                      onPress: (_e) => {
+                        void router.navigate({ to: item.to });
+                      },
+                    })}
                     startContent={item.icon({ size: 16 })}
                     textValue={item.label()}
                   >

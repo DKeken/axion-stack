@@ -24,7 +24,7 @@ export class UsersRepository extends CachedBaseRepository<
 > {
   constructor(
     readonly prismaService: PrismaService,
-    readonly redisService: RedisService
+    override readonly redisService: RedisService
   ) {
     super(prismaService, redisService);
   }
@@ -201,7 +201,7 @@ export class UsersRepository extends CachedBaseRepository<
   /**
    * Warm up cache for most accessed users
    */
-  async warmUpCache(): Promise<void> {
+  override async warmUpCache(): Promise<void> {
     try {
       // Cache first 50 users
       await this.findManyWithCache({

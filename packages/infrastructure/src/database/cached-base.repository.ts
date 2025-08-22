@@ -44,7 +44,7 @@ export abstract class CachedBaseRepository<
   protected cacheParams: CacheParams = { operation: '', args: '' };
 
   constructor(
-    protected readonly defaultDb: DatabaseClient,
+    protected override readonly defaultDb: DatabaseClient,
     protected readonly redisService: RedisService
   ) {
     super(defaultDb);
@@ -374,12 +374,20 @@ export abstract class CachedBaseRepository<
   protected deserializePaginationResult(cached: SerializableValue): PaginationResult<TModel> {
     const data = cached as unknown as SerializableObject;
 
-    return {
-      items: JSON.parse(data.items as string) as TModel[],
-      nextCursor: data.nextCursor as string | undefined,
-      hasMore: data.hasMore as boolean,
-      total: data.total as number | undefined,
+    const totalValue = data['total'];
+    const result: PaginationResult<TModel> = {
+      items: JSON.parse(data['items'] as string) as TModel[],
+      nextCursor: data['nextCursor'] as string | null | undefined,
+      hasMore: data['hasMore'] as boolean,
+      ...(totalValue !== undefined && { total: totalValue as number }),
     };
+
+    // Приводим undefined к null для совместимости с типом
+    if (result.nextCursor === undefined) {
+      result.nextCursor = null;
+    }
+
+    return result;
   }
 
   /**

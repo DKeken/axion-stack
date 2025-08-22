@@ -206,14 +206,15 @@ export class UsersService {
       name: user.name,
       avatar: user.avatar,
       emailVerified: user.emailVerified,
-      emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+      emailVerifiedAt: user.emailVerifiedAt ? new Date(user.emailVerifiedAt) : null,
       timezone: user.timezone,
       language: user.language,
       theme: user.theme,
-      lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
+      lastLoginAt: user.lastLoginAt ? new Date(user.lastLoginAt) : null,
       lastLoginIp: user.lastLoginIp,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
-    } as UserResponse;
+      passwordHash: '********',
+    } satisfies UserResponse;
   }
 }

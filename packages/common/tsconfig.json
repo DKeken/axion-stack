@@ -15,11 +15,23 @@
     "incremental": true,
     "skipLibCheck": true,
     "noEmit": true,
+
+    // Строгие настройки TypeScript (переопределяют базовые)
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
     "strictNullChecks": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Дополнительные проверки качества кода (смягчены для совместимости)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "useUnknownInCatchVariables": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]

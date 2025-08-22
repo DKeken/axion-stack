@@ -36,12 +36,12 @@ export function useIntersectionObserver({
 }: UseIntersectionObserverOptions = {}): IntersectionReturn {
   const [ref, setRef] = useState<Element | null>(null);
 
-  const [state, setState] = useState<State>(() => ({
+  const [state, setState] = useState<State>({
     isIntersecting: initialIsIntersecting,
     entry: undefined,
-  }));
+  });
 
-  const callbackRef = useRef<UseIntersectionObserverOptions['onChange']>(undefined);
+  const callbackRef = useRef<UseIntersectionObserverOptions['onChange'] | undefined>(undefined);
 
   callbackRef.current = onChange;
 

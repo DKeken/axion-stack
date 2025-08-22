@@ -14,11 +14,15 @@ import { RedisService } from './redis.service';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const redisConfig: RedisOptions = {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: configService.get('REDIS_PORT', 6379),
-          password: configService.get('REDIS_PASSWORD'),
-          db: configService.get('REDIS_DB', 0),
+          host: configService.get('REDIS_HOST') ?? 'localhost',
+          port: configService.get('REDIS_PORT') ?? 6379,
+          db: configService.get('REDIS_DB') ?? 0,
         };
+
+        const password = configService.get<string>('REDIS_PASSWORD');
+        if (password !== undefined) {
+          redisConfig.password = password;
+        }
 
         return {
           store: redisStore,
@@ -32,5 +36,4 @@ import { RedisService } from './redis.service';
   providers: [RedisService, ApiCacheService],
   exports: [CacheModule, RedisService, ApiCacheService],
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class RedisModule {}

@@ -6,9 +6,27 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+
+    // Строгие настройки TypeScript (смягчены для сгенерированного кода)
     "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "useUnknownInCatchVariables": true,
+
+    // Качество кода (смягчено для Prisma сгенерированных файлов)
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    // Настройки для сгенерированного кода (согласованы с базовыми)
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    // Компиляция
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",
