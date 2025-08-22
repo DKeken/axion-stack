@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/DKeken/axion-stack/compare/v1.0.1...v1.0.2) (2025-08-22)
+
+### 🔧 Chores
+
+* add support for 'chore' type in release configuration ([2995fda](https://github.com/DKeken/axion-stack/commit/2995fda866dd586ecefe529354c3a1cccda7c604))
+* update Dockerfiles and tsconfig for auth and user services, add Playwright configuration, add Grafana setup ([b9673cf](https://github.com/DKeken/axion-stack/commit/b9673cfcd83c6e40114974a57ca7ac3fd8c5215a))
+
 ## [1.0.1](https://github.com/DKeken/axion-stack/compare/v1.0.0...v1.0.1) (2025-08-22)
 
 ### 🔨 Code Refactoring
