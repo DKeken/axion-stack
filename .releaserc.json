@@ -19,6 +19,10 @@
           {
             "type": "style",
             "release": "patch"
+          },
+          {
+            "type": "chore",
+            "release": "patch"
           }
         ],
         "parserOpts": {
@@ -67,6 +71,10 @@
             {
               "type": "ci",
               "section": "👷 Continuous Integration"
+            },
+            {
+              "type": "chore",
+              "section": "🔧 Chores"
             }
           ]
         }
