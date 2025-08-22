@@ -1,3 +1,26 @@
+## 1.0.0 (2025-08-22)
+
+### ✨ Features
+
+* **arch:** made microservice architecture via rabbitmq ([f2a1119](https://github.com/DKeken/axion-stack/commit/f2a11192adbf701cde89bc3dfa547d3e88ce58c2))
+* **create-turbo:** apply official-starter transform ([51657cb](https://github.com/DKeken/axion-stack/commit/51657cb459ffb0a1262061c6378f8345e5e77ef8))
+* **create-turbo:** apply package-manager transform ([98daa37](https://github.com/DKeken/axion-stack/commit/98daa37790b784b1b9e4c1e8eab0a84e249299d9))
+* **create-turbo:** create basic ([18a57fa](https://github.com/DKeken/axion-stack/commit/18a57fa0c06d1dba6be4e8fa82099c260b4632d1))
+
+### 📚 Documentation
+
+* fix formatting in README.md by correcting the JWT Authentication line ([f44f669](https://github.com/DKeken/axion-stack/commit/f44f669535ca223f66a0e3715c864577cd4e7e66))
+* update README.md to include TanStack Query in the technology stack ([d95a81e](https://github.com/DKeken/axion-stack/commit/d95a81e13446fb4da1904bfb150376fffda39f40))
+* update README.md to reflect changes in core technologies and key features, including Bun Runtime ([7b884bf](https://github.com/DKeken/axion-stack/commit/7b884bf6c8463c663c54e159a575a6157bf60df0))
+* update README.md with enhanced project descriptions and technology stack ([15b41af](https://github.com/DKeken/axion-stack/commit/15b41af520cbbf90ed56cca2a9c6cb28d42d3950))
+
+### 🔨 Code Refactoring
+
+* remove unused files and update package.json for module support ([b4a960f](https://github.com/DKeken/axion-stack/commit/b4a960f4901fec216ad019332f9304ccaf863308))
+* remove unused model components, hooks, constants, and types to streamline the codebase ([7b4969b](https://github.com/DKeken/axion-stack/commit/7b4969b9752a5f9d2e62c36ca2c86b896fd03309))
+* replace logical OR with nullish coalescing operator for environment variables and clean up unused imports ([a3e2b8b](https://github.com/DKeken/axion-stack/commit/a3e2b8b21638752ab9fd680f1e8fe9d8ac1471fc))
+* update tsconfig paths and clean up unused imports in auth module, adjust release workflow by removing build step ([be03cf0](https://github.com/DKeken/axion-stack/commit/be03cf09c925d6c1c8e102d56d59dd700c46abd1))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
