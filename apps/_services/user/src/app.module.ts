@@ -30,8 +30,8 @@ import { UsersModule } from './modules/users/users.module';
       useFactory: () => ({
         throttlers: [
           {
-            ttl: parseInt(process.env.RATE_LIMIT_TTL || '60', 10) * 1000,
-            limit: parseInt(process.env.RATE_LIMIT_LIMIT || '100', 10),
+            ttl: parseInt(process.env.RATE_LIMIT_TTL ?? '60', 10) * 1000,
+            limit: parseInt(process.env.RATE_LIMIT_LIMIT ?? '100', 10),
           },
         ],
       }),
@@ -66,4 +66,5 @@ import { UsersModule } from './modules/users/users.module';
     },
   ],
 })
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class AppModule {}

@@ -1,9 +1,10 @@
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import type { MicroserviceRequest, MicroserviceResponse } from '@repo/common/types';
-import type { CreateUserDto, UpdateUserDto, UserListQueryDto } from '@repo/contracts';
 
 import { UsersService } from './users.service';
+
+import type { MicroserviceRequest, MicroserviceResponse } from '@repo/common/types';
+import type { CreateUserDto, UpdateUserDto, UserListQueryDto } from '@repo/contracts';
 
 @Controller()
 export class UsersMicroserviceController {

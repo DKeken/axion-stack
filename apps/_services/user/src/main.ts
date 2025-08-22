@@ -10,7 +10,7 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [process.env.RABBITMQ_URL || 'amqp://admin:password@localhost:5672'],
+      urls: [process.env.RABBITMQ_URL ?? 'amqp://admin:password@localhost:5672'],
       queue: 'user_service_queue',
       queueOptions: {
         durable: true,
@@ -20,13 +20,13 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CORS_ORIGIN ?? '*',
     credentials: true,
   });
 
   // Start both HTTP server and microservice
   await app.startAllMicroservices();
-  await app.listen(process.env.PORT || 3003);
+  await app.listen(process.env.PORT ?? 3003);
 
   console.log(`User Service is running on: ${await app.getUrl()}`);
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { buildCursorWhere, createPaginationResponse } from '@repo/common';
-import type { Prisma, User } from '@repo/database';
 import {
   CachedBaseRepository,
   PrismaService,
@@ -10,6 +9,8 @@ import {
   type PaginationResult,
   RedisService,
 } from '@repo/infrastructure';
+
+import type { Prisma, User } from '@repo/database';
 
 @Injectable()
 export class UsersRepository extends CachedBaseRepository<

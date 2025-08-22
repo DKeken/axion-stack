@@ -7,6 +7,10 @@ import {
   buildPrismaWhere,
   combineWhereConditions,
 } from '@repo/common';
+import { PrismaService, withTransaction, ApiCacheService } from '@repo/infrastructure';
+
+import { UsersRepository } from './users.repository';
+
 import type {
   CreateUserDto,
   UpdateUserDto,
@@ -15,9 +19,6 @@ import type {
   UserResponse,
 } from '@repo/contracts';
 import type { Prisma, User } from '@repo/database';
-import { PrismaService, withTransaction, ApiCacheService } from '@repo/infrastructure';
-
-import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {

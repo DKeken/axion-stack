@@ -26,8 +26,8 @@ export function useModels(variant: 'registry' | 'palette' = 'registry') {
     query: queryParams,
   });
 
-  const models = modelsQuery.data?.body.items || [];
-  const total = modelsQuery.data?.body.total || 0;
+  const models = modelsQuery.data?.body.items ?? [];
+  const total = modelsQuery.data?.body.total ?? 0;
   const totalPages = Math.ceil(total / limit);
 
   return {
@@ -49,7 +49,7 @@ export function useProviders() {
   });
 
   return {
-    providers: providersQuery.data?.body.items || [],
+    providers: providersQuery.data?.body.items ?? [],
     isLoading: providersQuery.isLoading,
     error: providersQuery.error,
   };

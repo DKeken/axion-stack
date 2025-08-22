@@ -13,8 +13,8 @@ export interface RefreshTokenCookieOptions {
   path?: string;
 }
 
-export class AuthCookieUtils {
-  static setRefreshTokenCookie(
+export const AuthCookieUtils = {
+  setRefreshTokenCookie(
     response: Response,
     refreshToken: string,
     options?: Partial<RefreshTokenCookieOptions>
@@ -30,21 +30,21 @@ export class AuthCookieUtils {
     const mergedOptions = { ...defaultOptions, ...options };
 
     response.cookie('refreshToken', refreshToken, mergedOptions);
-  }
+  },
 
-  static clearRefreshTokenCookie(response: Response): void {
+  clearRefreshTokenCookie(response: Response): void {
     response.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
     });
-  }
+  },
 
   /**
    * Check if response data contains tokens that require cookie handling
    */
-  static hasTokensForCookies(
+  hasTokensForCookies(
     data: unknown
   ): data is { tokens: { refreshToken: string } } | { refreshToken: string } {
     if (!data || typeof data !== 'object') {
@@ -61,12 +61,12 @@ export class AuthCookieUtils {
 
     // Check for direct refreshToken (refresh endpoint response)
     return typeof obj.refreshToken === 'string';
-  }
+  },
 
   /**
    * Extract refresh token from response data
    */
-  static extractRefreshToken(data: unknown): string | null {
+  extractRefreshToken(data: unknown): string | null {
     if (!AuthCookieUtils.hasTokensForCookies(data)) {
       return null;
     }
@@ -79,5 +79,5 @@ export class AuthCookieUtils {
     }
 
     return obj.refreshToken as string;
-  }
-}
+  },
+} as const;

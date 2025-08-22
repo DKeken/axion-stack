@@ -3,12 +3,7 @@ import React from 'react';
 import { Button, Chip, Avatar, getKeyValue } from '@heroui/react';
 
 import { STATUS_COLOR_MAP, CAPABILITY_ICONS, MAX_CAPABILITIES_DISPLAY } from './constants';
-import {
-  formatContextLength,
-  formatModelCost,
-  formatModelCostPer1M,
-  getModelInitials,
-} from './utils';
+import { formatContextLength, formatModelCostPer1M, getModelInitials } from './utils';
 
 import type { ModelData } from './types';
 
@@ -106,7 +101,7 @@ export function ModelTableCell({
 
     case 'status':
       return (
-        <Chip size='sm' color={STATUS_COLOR_MAP[model.status] || 'default'} variant='flat'>
+        <Chip size='sm' color={STATUS_COLOR_MAP[model.status] ?? 'default'} variant='flat'>
           {model.status}
         </Chip>
       );
