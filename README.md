@@ -35,6 +35,8 @@ bun run dev          # Start all services
 - **User Service**: http://localhost:3003
 - **Database UI**: http://localhost:8081 (Redis Commander)
 - **Message Broker**: http://localhost:15672 (RabbitMQ Management)
+- **Monitoring**: http://localhost:9090 (Prometheus), http://localhost:3100
+  (Grafana)
 
 ## 🏗️ Architecture
 
@@ -75,6 +77,8 @@ generation, and enterprise-grade security patterns.
   validation
 - **📡 Event-Driven Communication** — RabbitMQ for reliable inter-service
   messaging
+- **📊 Built-in Monitoring** — Prometheus metrics with Grafana dashboards
+- **🧪 Load Testing Ready** — Artillery + Playwright for performance validation
 - **🌐 Internationalization** — Built-in i18n support with Paraglide
 - **📱 Modern UI** — React 19 + HeroUI with responsive design
 
@@ -106,6 +110,13 @@ generation, and enterprise-grade security patterns.
 - **Docker** — Containerization
 - **TypeScript 5.6+** — Type safety
 - **ESLint + Prettier** — Code quality
+
+### Monitoring & Testing
+
+- **Prometheus** — Metrics collection and monitoring
+- **Grafana** — Metrics visualization and dashboards
+- **Playwright** — End-to-end browser testing
+- **Artillery** — Load testing and performance benchmarks
 
 ## 📁 Project Structure
 
@@ -182,6 +193,8 @@ bun run check-types      # TypeScript type checking
 | **User Service** | http://localhost:3003  | User management microservice   |
 | **Redis UI**     | http://localhost:8081  | Redis Commander (admin/admin)  |
 | **RabbitMQ**     | http://localhost:15672 | Management UI (admin/password) |
+| **Prometheus**   | http://localhost:9090  | Metrics collection server      |
+| **Grafana**      | http://localhost:3100  | Monitoring dashboards          |
 
 ## 🔒 Authentication Flow
 
@@ -248,6 +261,48 @@ API Contracts (TS-REST)
 Frontend Hooks (React Query)
 ```
 
+## 📊 Monitoring & Observability
+
+### Metrics Collection
+
+The system includes comprehensive monitoring with **Prometheus** and
+**Grafana**:
+
+```bash
+# Start monitoring stack
+bun run docker:up          # Includes Prometheus & Grafana
+
+# Access monitoring
+open http://localhost:9090  # Prometheus metrics
+open http://localhost:3100  # Grafana dashboards
+```
+
+### Available Dashboards
+
+- **System Overview**: Service health, response times, error rates
+- **Infrastructure Monitoring**: CPU, memory, disk usage
+- **Microservices Detailed**: Per-service metrics and traces
+- **Load Test Results**: Performance testing metrics from Artillery
+
+### Key Metrics
+
+```bash
+# Response Time & Throughput
+axion_http_request_duration_seconds
+axion_http_requests_total
+
+# Load Testing Metrics
+axion_smoke_page_load_time
+axion_auth_login_time
+axion_stress_response_time
+axion_perf_first_contentful_paint
+
+# System Health
+axion_service_up
+axion_database_connections
+axion_cache_hit_ratio
+```
+
 ## ⚙️ Requirements
 
 - **Bun** ≥ 1.2.18
@@ -257,16 +312,32 @@ Frontend Hooks (React Query)
 ## 🧪 Testing & Quality
 
 ```bash
-# Run tests
+# Unit & Integration Tests
 bun run test              # Unit tests
-bun run test:e2e          # End-to-end tests
+bun run test:e2e          # End-to-end tests with Playwright
 bun run test:cov          # Coverage report
+
+# Load Testing (Artillery + Playwright)
+bun run load:smoke        # Quick smoke test (30s)
+bun run load:auth         # Authentication load test (4 min)
+bun run load:stress       # Stress testing (9 min)
+bun run load:combined     # Combined scenarios (7 min)
+bun run load:report       # Generate test report
 
 # Code quality
 bun run lint              # ESLint validation
 bun run format            # Prettier formatting
 bun run check-types       # TypeScript validation
 ```
+
+### 📊 Load Testing Features
+
+- **Smoke Tests**: Quick validation of core functionality
+- **Authentication Tests**: Load testing of auth flows and JWT handling
+- **Stress Tests**: High-load scenarios to identify bottlenecks
+- **Combined Tests**: Full user journey simulation
+- **Metrics Integration**: Automatic reporting to Prometheus
+- **Browser Automation**: Real user interaction simulation with Playwright
 
 ## 🚢 Production Deployment
 
