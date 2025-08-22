@@ -24,12 +24,57 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass password
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "password", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Commander - Modern Redis Admin Web UI
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: "local:redis:6379:0:password"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: password
+      REDIS_DB: 0
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin
+      PORT: 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -45,7 +90,13 @@ services:
       NODE_ENV: development
       PORT: 3001
       DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
-      REDIS_URL: "redis://redis:6379"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: password
+      REDIS_DB: 0
+      REDIS_KEY_PREFIX: "gearai:"
+      REDIS_TTL: 3600
+      RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
       JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
       CORS_ORIGIN: "*"
@@ -57,35 +108,85 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     command: bun run start:dev
 
-  # API Application (production)
-  api-prod:
+  # Auth Service (microservice)
+  auth-service:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
-      target: production
+      dockerfile: apps/auth-service/Dockerfile
+      target: development
     restart: unless-stopped
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
+      PORT: 3002
       DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
-      REDIS_URL: "redis://redis:6379"
-      JWT_ACCESS_SECRET: "${JWT_ACCESS_SECRET}"
-      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
-      CORS_ORIGIN: "${CORS_ORIGIN:-*}"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: password
+      REDIS_DB: 0
+      REDIS_KEY_PREFIX: "gearai:"
+      REDIS_TTL: 3600
+      RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
+      JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
+      JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
+      CORS_ORIGIN: "*"
     ports:
-      - "3001:3000"
+      - "3002:3002"
+    volumes:
+      - ./apps/auth-service:/app
+      - /app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    profiles:
-      - production
+      rabbitmq:
+        condition: service_healthy
+    command: bun run start:dev
+
+  # User Service (microservice)
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+      target: development
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: password
+      REDIS_DB: 0
+      REDIS_KEY_PREFIX: "gearai:"
+      REDIS_TTL: 3600
+      RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
+      CORS_ORIGIN: "*"
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./apps/user-service:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: bun run start:dev
 
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
+  rabbitmq_logs:
 
 networks:
   default:

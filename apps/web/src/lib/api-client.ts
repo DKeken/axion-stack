@@ -1,4 +1,4 @@
-import { apiContract } from '@repo/api/src/contracts';
+import { apiContract } from '@repo/contracts';
 import { initQueryClient } from '@ts-rest/react-query';
 
 import { useAuthStore } from '~/stores/auth-store';
@@ -13,7 +13,6 @@ export const apiClient = initQueryClient(apiContract, {
     Authorization: () => {
       const state = useAuthStore.getState();
       const token = state.hasValidToken() ? state.accessToken : null;
-
       return token ? `Bearer ${token}` : '';
     },
   },

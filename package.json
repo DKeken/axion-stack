@@ -6,13 +6,19 @@
     "build": "turbo run build",
     "dev": "kill -9 $(lsof -ti:3000,3001) 2>/dev/null || true && turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\" --ignore-path .prettierignore",
     "check-types": "turbo run check-types",
     "start": "turbo run start",
     "start:prod": "turbo run start:prod",
     "api:start": "cd apps/api && bun run start",
     "api:start:prod": "cd apps/api && bun run start:prod",
     "api:build": "cd apps/api && bun run build",
+    "auth-service:start": "cd apps/auth-service && bun run start",
+    "auth-service:start:prod": "cd apps/auth-service && bun run start:prod",
+    "auth-service:build": "cd apps/auth-service && bun run build",
+    "user-service:start": "cd apps/user-service && bun run start",
+    "user-service:start:prod": "cd apps/user-service && bun run start:prod",
+    "user-service:build": "cd apps/user-service && bun run build",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
@@ -43,7 +49,20 @@
   "workspaces": [
     "apps/*",
     "apps/**/*",
+    "apps/_services/*",
+    "apps/_services/**/*",
     "packages/*",
     "packages/**/*"
-  ]
+  ],
+  "dependencies": {
+    "@heroui/card": "^2.2.23",
+    "@heroui/chip": "^2.2.20",
+    "@heroui/divider": "^2.2.17",
+    "@heroui/progress": "^2.2.20",
+    "@heroui/slider": "^2.4.21",
+    "@heroui/tooltip": "^2.2.21",
+    "@nestjs/axios": "^4.0.1",
+    "prisma-fns": "^1.1.5",
+    "use-sound": "^5.0.0"
+  }
 }

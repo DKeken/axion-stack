@@ -1,14 +1,14 @@
+import { Button } from '@heroui/button';
+import { Card, CardBody, CardHeader } from '@heroui/card';
 import {
   ErrorComponent,
-  Link,
+  type ErrorComponentProps,
   rootRouteId,
   useMatch,
   useRouter,
-  type ErrorComponentProps,
 } from '@tanstack/react-router';
 
-import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Link } from '~/routes/__root';
 
 export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
   const router = useRouter();
@@ -23,13 +23,13 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     <div className='flex flex-1 items-center justify-center min-h-[60vh]'>
       <Card className='w-full max-w-md shadow-lg'>
         <CardHeader>
-          <CardTitle>Something went wrong</CardTitle>
+          <h3 className='text-lg font-semibold'>Something went wrong</h3>
         </CardHeader>
-        <CardContent className='flex flex-col items-center gap-6'>
+        <CardBody className='flex flex-col items-center gap-6'>
           <ErrorComponent error={error} />
           <div className='flex gap-2 items-center flex-wrap'>
             <Button
-              variant='default'
+              variant='solid'
               onClick={() => {
                 void router.invalidate();
               }}
@@ -37,13 +37,12 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               Try Again
             </Button>
             {isRoot ? (
-              <Button asChild variant='secondary'>
+              <Button variant='flat'>
                 <Link to='/'>Home</Link>
               </Button>
             ) : (
               <Button
-                asChild
-                variant='secondary'
+                variant='flat'
                 onClick={(e) => {
                   e.preventDefault();
                   window.history.back();
@@ -53,7 +52,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               </Button>
             )}
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

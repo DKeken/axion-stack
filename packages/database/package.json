@@ -14,16 +14,20 @@
     "db:reset": "prisma migrate reset",
     "db:seed": "bun run seed.ts",
     "db:studio": "prisma studio",
-    "zod:generate": "prisma generate --generator zod"
+    "db:validate": "prisma validate",
+    "zod:generate": "prisma generate --generator zod",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "check-types": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "^6.7.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22.8.1",
     "bun-plugin-dtsx": "^0.9.5",
-    "prisma": "^5.20.0",
+    "dotenv": "^16.4.5",
+    "prisma": "^6.7.0",
     "typescript": "^5.8.3",
     "zod-prisma-types": "^3.1.8"
   },
@@ -33,12 +37,12 @@
       "default": "./dist/index.js"
     },
     "./generated/zod": {
-      "types": "./generated/zod/index.d.ts",
-      "default": "./generated/zod/index.js"
+      "types": "./src/generated/zod/index.ts",
+      "default": "./dist/generated/zod/index.js"
     },
     "./generated/zod/*": {
-      "types": "./generated/zod/*.d.ts",
-      "default": "./generated/zod/*.js"
+      "types": "./src/generated/zod/*.ts",
+      "default": "./dist/generated/zod/*.js"
     }
   }
 }

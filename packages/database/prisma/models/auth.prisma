@@ -1,0 +1,105 @@
+// Authentication and User Management Domain
+// Models for user accounts, authentication tokens, and sessions
+
+enum UserStatus {
+  ACTIVE     /// User is active and can use the platform
+  INACTIVE   /// User account is temporarily disabled
+  PENDING    /// User registration is pending email verification
+  SUSPENDED  /// User account is suspended due to policy violations
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique /// @zod.string.email()
+  passwordHash String   @map("password_hash") /// @zod.string.min(8)
+  name         String?
+  avatar       String?  /// URL to user avatar image
+  status       UserStatus @default(PENDING)
+  
+  // Email verification
+  emailVerified    Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt  DateTime? @map("email_verified_at")
+  verificationToken String?  @map("verification_token")
+  
+  // Password reset
+  resetToken     String?   @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+  
+  // User preferences
+  timezone     String   @default("UTC")
+  language     String   @default("en")
+  theme        String   @default("system") /// light, dark, system
+  
+  // Security
+  lastLoginAt  DateTime? @map("last_login_at")
+  lastLoginIp  String?   @map("last_login_ip")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  refreshTokens      RefreshToken[]
+  sessions           Session[]
+  
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model RefreshToken {
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  jti             String    @unique /// JWT ID for unique token identification
+  familyId        String    @map("family_id") /// Token family ID for reuse detection
+  fingerprintHash String?   @map("fingerprint_hash") /// Device/browser fingerprint hash for additional security
+  
+  // Security metadata
+  userAgent       String?   @map("user_agent")
+  ipAddress       String?   @map("ip_address")
+  
+  // Token management
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  usedAt    DateTime? @map("used_at") /// When token was used for refresh
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([familyId])
+  @@index([jti])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("refresh_tokens")
+}
+
+model Session {
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  
+  // Session metadata
+  userAgent       String?   @map("user_agent")
+  ipAddress       String?   @map("ip_address")
+  fingerprintHash String?   @map("fingerprint_hash")
+  
+  // Activity tracking
+  lastActivityAt  DateTime  @default(now()) @map("last_activity_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([lastActivityAt])
+  @@index([isActive])
+  @@map("sessions")
+}

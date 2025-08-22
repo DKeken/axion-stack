@@ -1,16 +1,26 @@
 /// <reference types="vite/client" />
-import * as React from 'react';
 
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
+import { DropdownItem } from '@heroui/dropdown';
+import { Link as HeroUILink } from '@heroui/link';
+import { createLink, createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
-import { AuthProvider } from '~/components/auth/auth-provider';
+import type { ReactNode } from 'react';
+
 import { DefaultCatchBoundary } from '~/components/default-catch-boundary';
 import { NotFound } from '~/components/not-found';
+import { Provider } from '~/components/provider';
 import { QueryProvider } from '~/components/query-provider';
-import { Toaster } from '~/components/ui/toaster';
+import { SessionManager } from '~/components/session-manager';
+import { ThemeProvider } from '~/components/theme-provider';
+import { useHydration } from '~/hooks/use-hydration';
+import { getLocale } from '~/paraglide/runtime';
+// import { getInitialTheme } from '~/lib/theme.server';
 import appCss from '~/styles/app.css?url';
 import { seo } from '~/utils/seo';
+
+export const Link = createLink(HeroUILink);
+export const DropdownItemLink = createLink(DropdownItem);
 
 export const Route = createRootRoute({
   head: () => ({
@@ -23,12 +33,14 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'TanStack Start | Type-Safe, Client-First, Full-Stack React Framework',
-        description: `TanStack Start is a type-safe, client-first, full-stack React framework. `,
+        title: 'GearAI | AI-Powered Chat Platform',
+        description:
+          'Продвинутая платформа для общения с AI моделями. Создавайте, управляйте и делитесь чатами.',
       }),
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
+      // Tailwind v4 CSS-first already includes HeroUI styles via @plugin; no direct CSS link needed
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
@@ -49,26 +61,50 @@ export const Route = createRootRoute({
       { rel: 'manifest', href: '/site.webmanifest', color: '#fffff' },
       { rel: 'icon', href: '/favicon.ico' },
     ],
+    scripts: [],
   }),
+
   errorComponent: DefaultCatchBoundary,
   notFoundComponent: () => <NotFound />,
-  shellComponent: RootDocument,
+  component: RootComponent,
 });
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootComponent() {
   return (
-    <html lang='en' className='size-full'>
+    <RootDocument>
+      <Provider>
+        <SessionManager />
+        <Outlet />
+      </Provider>
+    </RootDocument>
+  );
+}
+
+function RootDocument({ children }: { children: ReactNode }) {
+  const forcedThemeValue = undefined;
+  const isHydrated = useHydration();
+  const htmlClass = 'size-full';
+
+  return (
+    <html lang={getLocale()} className={htmlClass} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body className='size-full'>
-        <QueryProvider>
-          <AuthProvider>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          enableSystem
+          storageKey='theme'
+          forcedTheme={forcedThemeValue}
+        >
+          <QueryProvider>
             {children}
-            <Toaster />
-            <TanStackRouterDevtools position='bottom-right' />
-          </AuthProvider>
-        </QueryProvider>
+            {import.meta.env.DEV && isHydrated ? (
+              <TanStackRouterDevtools position='bottom-right' />
+            ) : null}
+          </QueryProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>

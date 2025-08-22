@@ -20,6 +20,11 @@ export default [
       '**/*.bundle.js',
       '**/public/**',
       '**/static/**',
+      '**/paraglide/**',
+      '**/.nitro/**',
+      '**/app/paraglide/**',
+      '**/src/paraglide/**',
+      '**/styles/hero.js',
     ],
   },
 
@@ -29,7 +34,15 @@ export default [
   // NestJS-specific configuration for backend apps
   ...createNestJSConfig().map((config) => ({
     ...config,
-    files: ['apps/api/**/*.{ts,js}'],
+    files: [
+      'apps/api/**/*.{ts,js}',
+      'apps/auth-service/**/*.{ts,js}',
+      'apps/user-service/**/*.{ts,js}',
+      'packages/infrastructure/**/*.{ts,js}',
+      'packages/database/**/*.{ts,js}',
+      'packages/common/**/*.{ts,js}',
+      'packages/contracts/**/*.{ts,js}',
+    ],
   })),
 
   // React-specific configuration for client apps

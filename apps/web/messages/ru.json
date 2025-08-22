@@ -1,0 +1,12 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "example_message": "Привет, {username}",
+  "server_message": "Сообщение сервера {emoji}",
+  "nav": {
+    "home": "Главная",
+    "billing": "Биллинг",
+    "docs": "Документация",
+    "tools": "Инструменты",
+    "noTools": "Нет инструментов"
+  }
+}

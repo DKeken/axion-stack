@@ -1,0 +1,24 @@
+{
+  "name": "@repo/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "dev": "echo '@repo/contracts dev mode (no-op)'",
+    "build": "echo '@repo/contracts build mode (no-op)'",
+    "check-types": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
+    "lint": "echo '@repo/contracts lint mode (no-op)'"
+  },
+  "dependencies": {
+    "@ts-rest/core": "^3.30.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/database": "workspace:*",
+    "typescript": "5.8.3"
+  }
+}

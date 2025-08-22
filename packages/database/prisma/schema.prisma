@@ -1,13 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Main schema file with generators and datasource
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
 }
 
 generator zod {
   provider                         = "zod-prisma-types"
-  output                          = "../generated/zod"
+  output                          = "../src/generated/zod"
   useMultipleFiles                = true
   writeBarrelFiles                = true
   createInputTypes                = true
@@ -29,75 +28,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique /// @zod.string.email()
-  passwordHash String   @map("password_hash") /// @zod.string.min(8)
-  name         String?
-  
-  // Timestamps
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  
-  // Relations
-  refreshTokens RefreshToken[]
-  posts         Post[] @relation("UserPosts")
-  
-  @@map("users")
+// Global enums used across multiple domains
+enum Currency {
+  USD
+  RUB
 }
 
-model RefreshToken {
-  id              String    @id @default(cuid())
-  userId          String    @map("user_id")
-  jti             String    @unique /// JWT ID для уникальной идентификации токена
-  familyId        String    @map("family_id") /// Идентификатор семейства токенов для reuse-детекции
-  fingerprintHash String?   @map("fingerprint_hash") /// Хэш устройства/браузера для дополнительной безопасности
-  
-  // Token management
-  expiresAt DateTime  @map("expires_at")
-  revokedAt DateTime? @map("revoked_at")
-  usedAt    DateTime? @map("used_at") /// Когда токен был использован для refresh
-  
-  // Timestamps
-  createdAt DateTime @default(now()) @map("created_at")
-  
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([familyId])
-  @@index([jti])
-  @@index([expiresAt])
-  @@map("refresh_tokens")
+enum BillingInterval {
+  MONTHLY
+  YEARLY
 }
-
-/// Перечисление статусов для демонстрации enum генерации
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  PENDING
-  SUSPENDED
-}
-
-/// Пример модели для демонстрации связей и фильтров
-model Post {
-  id        String   @id @default(cuid())
-  title     String   /// @zod.string.min(1).max(200)
-  content   String?
-  published Boolean  @default(false)
-  authorId  String   @map("author_id")
-  status    UserStatus @default(PENDING)
-  
-  // Timestamps
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  
-  // Relations
-  author User @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  
-  @@index([authorId])
-  @@index([published])
-  @@index([status])
-  @@map("posts")
-}
-

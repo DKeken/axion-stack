@@ -6,9 +6,10 @@ import dts from 'bun-plugin-dtsx';
 await $`rm -rf dist`;
 
 const result = await Bun.build({
-  entrypoints: ['src/index.ts'],
+  entrypoints: ['src/index.ts', 'src/generated/zod/index.ts'],
   outdir: './dist',
   target: 'node',
+  external: ['@prisma/client', 'zod'],
   plugins: [
     dts({
       // @ts-expect-error - plugin types are incorrect
