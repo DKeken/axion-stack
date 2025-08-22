@@ -1,9 +1,6 @@
-# ⚡ AXION STACK
+<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/0863470a-f709-4863-ad82-7e977f8ebd23" />
 
 > **Enterprise-grade monorepo platform with end-to-end type safety**
-
-Modern, production-ready full-stack application built with cutting-edge
-technologies for maximum developer experience and enterprise scalability.
 
 [![Built with TypeScript](https://img.shields.io/badge/Built%20with-TypeScript-3178c6.svg)](https://www.typescriptlang.org/)
 [![Powered by Bun](https://img.shields.io/badge/Powered%20by-Bun-f472b6.svg)](https://bun.sh/)
