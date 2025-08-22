@@ -40,6 +40,9 @@ jobs:
       - name: Build database package
         run: cd packages/database && bun run db:build
 
+      - name: Generate Paraglide i18n
+        run: cd apps/web && npx paraglide-js compile --project ./project.inlang --outdir ./src/paraglide
+
       - name: Lint
         run: bun run lint
 
