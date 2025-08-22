@@ -32,8 +32,8 @@ const configSchema = z.object({
 
   // RabbitMQ
   RABBITMQ_URL: z.string().default('amqp://localhost:5672'),
-  RABBITMQ_EXCHANGE_NAME: z.string().default('gearai.events'),
-  RABBITMQ_QUEUE_PREFIX: z.string().default('gearai'),
+  RABBITMQ_EXCHANGE_NAME: z.string().default('axion.events'),
+  RABBITMQ_QUEUE_PREFIX: z.string().default('axion'),
   RABBITMQ_RETRY_ATTEMPTS: z.coerce.number().min(1).max(10).default(3),
   RABBITMQ_RETRY_DELAY: z.coerce.number().min(100).default(1000),
 

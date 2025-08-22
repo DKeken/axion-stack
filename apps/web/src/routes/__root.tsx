@@ -33,9 +33,8 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'GearAI | AI-Powered Chat Platform',
-        description:
-          'Продвинутая платформа для общения с AI моделями. Создавайте, управляйте и делитесь чатами.',
+        title: 'axion',
+        description: 'axion',
       }),
     ],
     links: [

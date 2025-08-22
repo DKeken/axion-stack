@@ -94,7 +94,7 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: password
       REDIS_DB: 0
-      REDIS_KEY_PREFIX: "gearai:"
+      REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
       RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
@@ -129,7 +129,7 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: password
       REDIS_DB: 0
-      REDIS_KEY_PREFIX: "gearai:"
+      REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
       RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
@@ -164,7 +164,7 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: password
       REDIS_DB: 0
-      REDIS_KEY_PREFIX: "gearai:"
+      REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
       RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
       CORS_ORIGIN: "*"
