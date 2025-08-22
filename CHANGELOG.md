@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/DKeken/axion-stack/compare/v1.0.0...v1.0.1) (2025-08-22)
+
+### 🔨 Code Refactoring
+
+* update Redis key prefix and RabbitMQ configuration to use 'axion' instead of 'gearai' ([ccaef3e](https://github.com/DKeken/axion-stack/commit/ccaef3e67854af4c8362f57ea94f1b5b7f73d1de))
+
 ## 1.0.0 (2025-08-22)
 
 ### ✨ Features

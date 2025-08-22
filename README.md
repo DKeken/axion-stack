@@ -1,4 +1,5 @@
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/0863470a-f709-4863-ad82-7e977f8ebd23" />
+<img width="256" height="256" alt="Снимок экрана 2025-08-22 в 09 06 46" src="https://github.com/user-attachments/assets/bc3995c1-6321-45a4-8d09-0f451ac13421" />
 
 > **Enterprise-grade monorepo platform with end-to-end type safety**
 
