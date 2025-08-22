@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:seed": "bun run seed.ts",
+    "db:setup": "prisma generate && prisma db push && bun run seed.ts",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
     "zod:generate": "prisma generate --generator zod",

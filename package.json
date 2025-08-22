@@ -1,5 +1,6 @@
 {
-  "name": "something",
+  "name": "axion-stack",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -30,14 +31,24 @@
     "db:seed": "turbo run db:seed",
     "db:studio": "turbo run db:studio",
     "db:setup": "turbo run db:setup",
-    "db:reset": "docker compose down postgres && docker volume rm postgres_data || true && docker compose up postgres -d && bun db:setup"
+    "db:reset": "docker compose down postgres && docker volume rm postgres_data || true && docker compose up postgres -d && bun db:setup",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^10.0.3",
+    "@semantic-release/npm": "^12.0.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
     "eslint": "^9.32.0",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-sonarjs": "^3.0.4",
     "globals": "^16.3.0",
     "prettier": "^3.6.2",
+    "semantic-release": "^24.0.0",
     "turbo": "^2.5.5",
     "typescript": "5.8.3",
     "typescript-eslint": "^8.38.0"

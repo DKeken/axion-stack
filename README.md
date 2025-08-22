@@ -315,11 +315,30 @@ docker compose -f docker-compose.prod.yml up -d
 
 ### Development Guidelines
 
-- Use **conventional commits** for clear history
+- Use **conventional commits** for clear history (see
+  [CONTRIBUTING.md](.github/CONTRIBUTING.md))
 - Ensure **100% type safety** - no `any` types
 - Write **tests** for new features
 - Update **documentation** for API changes
 - Follow **ESLint** and **Prettier** rules
+
+### Release Process
+
+This project uses automated releases with
+[semantic-release](https://semantic-release.gitbook.io/):
+
+- **Commits** → Automatic version bumping
+- **Changelog** → Generated from conventional commits
+- **GitHub Releases** → Created automatically
+- **Version** → Updated in package.json
+
+```bash
+# Test what release would be generated
+bun run release:dry
+
+# Manual release (normally automated via GitHub Actions)
+bun run release
+```
 
 ## 📄 License
 
