@@ -5,7 +5,6 @@ import { PrismaService } from '@repo/infrastructure';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import type { AccessTokenPayload } from '../types/tokens.type';
-
 import type { AppConfig } from '@/config/configuration';
 
 @Injectable()

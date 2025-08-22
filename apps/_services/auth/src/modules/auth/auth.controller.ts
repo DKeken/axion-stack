@@ -1,16 +1,17 @@
 import { Controller, Res, UseGuards } from '@nestjs/common';
 import { Public } from '@repo/common';
 import { authContract } from '@repo/contracts';
-import type { User } from '@repo/database';
 import { ApiCacheService } from '@repo/infrastructure';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginErrors, LogoutErrors, RefreshErrors, RegisterErrors } from './errors';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+
 import type { RefreshTokenData } from './types/tokens.type';
+import type { User } from '@repo/database';
+import type { Response } from 'express';
 
 @Controller()
 export class AuthController {

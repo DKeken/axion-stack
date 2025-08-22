@@ -30,4 +30,6 @@ import type { AppConfig } from '@/config/configuration';
   providers: [AuthService, AccessJwtStrategy, RefreshJwtStrategy, PrismaService],
   exports: [AuthService, AccessJwtStrategy, RefreshJwtStrategy],
 })
-export class AuthModule {}
+export class AuthModule {
+  // Module configuration is handled by decorators above
+}

@@ -2,12 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { PrismaService } from '@repo/infrastructure';
-import type { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import type { RefreshTokenData, RefreshTokenPayload } from '../types/tokens.type';
-
 import type { AppConfig } from '@/config/configuration';
+import type { Request } from 'express';
 
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt') {

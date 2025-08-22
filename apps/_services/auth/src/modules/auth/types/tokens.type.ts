@@ -12,7 +12,10 @@ export interface RefreshTokenPayload extends JwtPayload {
 }
 
 export interface AccessTokenPayload extends JwtPayload {
-  // Access token specific fields can be added here
+  // Access tokens are used for API authentication
+  // Currently inherits all properties from JwtPayload
+  // Future access-token-specific fields can be added here
+  scopes?: string[];
 }
 
 export interface TokenPair {

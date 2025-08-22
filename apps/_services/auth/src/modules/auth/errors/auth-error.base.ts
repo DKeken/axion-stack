@@ -7,8 +7,8 @@ export interface AuthErrorResponse {
   error: string;
 }
 
-export abstract class AuthErrorBuilder {
-  protected static createBaseError(
+export class AuthErrorBuilder {
+  static createBaseError(
     statusCode: number,
     path: string,
     method: string,

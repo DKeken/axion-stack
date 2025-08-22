@@ -1,9 +1,10 @@
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import type { MicroserviceRequest, MicroserviceResponse } from '@repo/common/types';
-import type { LoginDto, RefreshTokenDto, RegisterDto } from '@repo/contracts';
 
 import { AuthService } from './auth.service';
+
+import type { MicroserviceRequest, MicroserviceResponse } from '@repo/common/types';
+import type { LoginDto, RefreshTokenDto, RegisterDto } from '@repo/contracts';
 
 @Controller()
 export class AuthMicroserviceController {
@@ -78,7 +79,7 @@ export class AuthMicroserviceController {
       }
 
       const refreshDto = request.body as RefreshTokenDto;
-      const fingerprint = refreshDto?.fingerprint || request.headers['x-fingerprint'];
+      const fingerprint = refreshDto?.fingerprint ?? request.headers['x-fingerprint'];
 
       const result = await this.authService.refreshTokens(refreshTokenData, fingerprint);
 

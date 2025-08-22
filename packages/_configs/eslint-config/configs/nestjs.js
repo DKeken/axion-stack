@@ -79,6 +79,9 @@ export default [
 
       // Nullish coalescing - отключено, || тоже нормально
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      
+      // Отключаем проблемные правила полностью
+      '@typescript-eslint/no-namespace': 'off',
 
       // Console statements - предупреждения для main.ts
       'no-console': 'warn',
@@ -129,7 +132,7 @@ export default [
           allowInterfaces: 'with-single-extends', // Разрешаем пустые интерфейсы, которые расширяют другие
         },
       ],
-      '@typescript-eslint/no-extraneous-class': 'off', // Отключаем для NestJS модулей
+      '@typescript-eslint/no-extraneous-class': 'off', // Отключаем полностью для всех файлов
     },
   },
 

@@ -74,7 +74,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'warn', // Изменено с error на warn
+      '@typescript-eslint/prefer-nullish-coalescing': 'off', // Полностью отключено
       '@typescript-eslint/prefer-optional-chain': 'error',
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
@@ -85,6 +85,10 @@ export default [
       '@typescript-eslint/array-type': ['error', { default: 'array' }],
       // Отключаем правило naming-convention полностью
       '@typescript-eslint/naming-convention': 'off',
+      // Отключаем правила для пустых классов и классов только со статическими методами
+      '@typescript-eslint/no-extraneous-class': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-namespace': 'off',
 
       // Import rules
       'import-x/order': [

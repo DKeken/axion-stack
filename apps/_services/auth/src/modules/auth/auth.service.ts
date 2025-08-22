@@ -1,7 +1,6 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import type { AuthUserResponse, LoginDto, RegisterDto } from '@repo/contracts';
 import { type DatabaseClient, withTransaction, PrismaService } from '@repo/infrastructure';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,8 +10,8 @@ import type {
   RefreshTokenPayload,
   TokenPair,
 } from './types/tokens.type';
-
 import type { AppConfig } from '@/config/configuration';
+import type { AuthUserResponse, LoginDto, RegisterDto } from '@repo/contracts';
 
 @Injectable()
 export class AuthService {
@@ -70,8 +69,8 @@ export class AuthService {
           ...user,
           createdAt: user.createdAt.toISOString(),
           updatedAt: user.updatedAt.toISOString(),
-          emailVerifiedAt: user.emailVerifiedAt?.toISOString() || null,
-          lastLoginAt: user.lastLoginAt?.toISOString() || null,
+          emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+          lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
         },
         tokens,
       };
@@ -117,15 +116,15 @@ export class AuthService {
     const tokens = await this.generateTokenPair(user.id, user.email, fingerprint);
 
     // Return user without password hash
-    const { passwordHash, ...userWithoutPassword } = user;
+    const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
 
     return {
       user: {
         ...userWithoutPassword,
         createdAt: userWithoutPassword.createdAt.toISOString(),
         updatedAt: userWithoutPassword.updatedAt.toISOString(),
-        emailVerifiedAt: userWithoutPassword.emailVerifiedAt?.toISOString() || null,
-        lastLoginAt: userWithoutPassword.lastLoginAt?.toISOString() || null,
+        emailVerifiedAt: userWithoutPassword.emailVerifiedAt?.toISOString() ?? null,
+        lastLoginAt: userWithoutPassword.lastLoginAt?.toISOString() ?? null,
       },
       tokens,
     };
@@ -160,7 +159,7 @@ export class AuthService {
   }
 
   async logout(refreshTokenData: RefreshTokenData): Promise<void> {
-    const { jti, userId } = refreshTokenData;
+    const { jti, userId: _userId } = refreshTokenData;
 
     await this.prisma.refreshToken.update({
       where: { jti },
@@ -199,7 +198,7 @@ export class AuthService {
       sub: userId,
       email,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + this.parseExpiresIn(accessExpiresIn || '15m'),
+      exp: Math.floor(Date.now() / 1000) + this.parseExpiresIn(accessExpiresIn ?? '15m'),
     };
 
     // Create refresh token payload
@@ -209,7 +208,7 @@ export class AuthService {
       jti,
       familyId,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + this.parseExpiresIn(refreshExpiresIn || '7d'),
+      exp: Math.floor(Date.now() / 1000) + this.parseExpiresIn(refreshExpiresIn ?? '7d'),
     };
 
     // Generate tokens (exp already set in payload, don't use expiresIn option)
@@ -238,7 +237,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      expiresIn: this.parseExpiresIn(accessExpiresIn || '15m'),
+      expiresIn: this.parseExpiresIn(accessExpiresIn ?? '15m'),
     };
   }
 

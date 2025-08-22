@@ -8,4 +8,6 @@ import { HealthController } from './health.controller';
   controllers: [HealthController],
   providers: [PrismaService],
 })
-export class HealthModule {}
+export class HealthModule {
+  // Module configuration is handled by decorators above
+}
