@@ -63,7 +63,7 @@ generation, and enterprise-grade security patterns.
        └─────────────┘        └─────────────┘
              ▲                        ▲
              │                        │
-   ┌─────────┴───────────┐   ┌────────┴─────────┐
+   ┌─────────┴────────────┐   ┌────────┴─────────┐
    │   All services use   │   │   All services   │
    │   RabbitMQ for comm  │   │  access Redis    │
    └──────────────────────┘   └──────────────────┘
