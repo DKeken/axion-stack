@@ -9,7 +9,7 @@
   "module": "src/main.ts",
   "scripts": {
     "build": "bun scripts/build.ts",
-    "dev": "bun --env-file=.env --watch --hot src/main.ts",
+    "dev": "bun --env-file=.env --watch src/main.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "NODE_ENV=development tsc && bun .",
     "start:dev": "NODE_ENV=development tsc-watch --onSuccess \"bun .\"",

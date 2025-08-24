@@ -6,9 +6,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Prisma } from '@repo/database';
-import type { Request, Response } from 'express';
 
 import type { ErrorResponse } from './http-exception.filter';
+import type { Request, Response } from 'express';
 
 /**
  * Secure Prisma exception filter with conservative error handling

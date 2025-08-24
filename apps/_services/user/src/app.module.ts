@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_FILTER, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import {
-  HttpExceptionFilter,
-  LoggingInterceptor,
   PrismaExceptionFilter,
-  TransformInterceptor,
+  ServiceRegistryModule,
+  MicroserviceRegistryService,
+  ContractDiscoveryService,
 } from '@repo/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
@@ -16,55 +15,32 @@ import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
-    // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validationSchema,
     }),
-
-    // Redis cache
     RedisModule,
-
-    // Rate limiting
-    ThrottlerModule.forRootAsync({
+    DiscoveryModule,
+    ServiceRegistryModule.forRootAsync({
       useFactory: () => ({
-        throttlers: [
-          {
-            ttl: parseInt(process.env.RATE_LIMIT_TTL ?? '60', 10) * 1000,
-            limit: parseInt(process.env.RATE_LIMIT_LIMIT ?? '100', 10),
-          },
-        ],
+        registryPrefix: 'axion:services',
+        heartbeatInterval: 30000,
+        serviceTtl: 120,
+        enableCleanup: true,
       }),
     }),
-
-    // Feature modules
     UsersModule,
     HealthModule,
   ],
   providers: [
-    // Global database service
     PrismaService,
+    ContractDiscoveryService,
+    MicroserviceRegistryService,
 
-    // Global interceptors
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
-
-    // Global exception filters
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
     {
       provide: APP_FILTER,
       useClass: PrismaExceptionFilter,
     },
   ],
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class AppModule {}

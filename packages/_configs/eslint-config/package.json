@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
     "@eslint/js": "^9.32.0",
@@ -44,11 +44,26 @@
     "typescript": "^5.7.3"
   },
   "exports": {
-    ".": "./index.js",
-    "./base": "./configs/base.js",
-    "./nestjs": "./configs/nestjs.js",
-    "./react": "./configs/react.js",
-    "./prettier": "./configs/prettier.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./base": {
+      "types": "./base.d.ts",
+      "default": "./configs/base.js"
+    },
+    "./nestjs": {
+      "types": "./nestjs.d.ts",
+      "default": "./configs/nestjs.js"
+    },
+    "./react": {
+      "types": "./react.d.ts",
+      "default": "./configs/react.js"
+    },
+    "./prettier": {
+      "types": "./prettier.d.ts",
+      "default": "./configs/prettier.js"
+    }
   },
   "engines": {
     "node": ">=18.0.0"

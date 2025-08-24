@@ -61,20 +61,41 @@ export default [
       sonarjs: sonarjs,
     },
     rules: {
+      // ===== STRICT TYPE SAFETY RULES (HIGH PRIORITY) =====
+      // Запрет небезопасных конструкций с any
+      '@typescript-eslint/no-explicit-any': 'error', // Запрет any (было warn)
+      '@typescript-eslint/no-unsafe-assignment': 'error', // Запрет присваивания any
+      '@typescript-eslint/no-unsafe-call': 'error', // Запрет вызова any
+      '@typescript-eslint/no-unsafe-member-access': 'error', // Запрет доступа к свойствам any
+      '@typescript-eslint/no-unsafe-return': 'error', // Запрет возврата any
+      '@typescript-eslint/no-unsafe-argument': 'error', // Запрет передачи any в аргументы
+
+      // Контроль type assertions - ЗАПРЕЩАЕМ ВСЕ as unknown as и подобные
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        {
+          assertionStyle: 'never', // Полный запрет type assertions (as, <Type>)
+        },
+      ],
+
+      // Запрет опасных конструкций
+      '@typescript-eslint/no-non-null-assertion': 'error', // Запрет !
+      '@typescript-eslint/ban-ts-comment': 'error', // Запрет @ts-ignore
+      // ===== END STRICT TYPE SAFETY RULES =====
+
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': [
-        'warn', // Изменено с error на warn
+        'warn',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',
-          args: 'after-used', // Разрешаем неиспользуемые аргументы
+          args: 'after-used',
         },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off', // Полностью отключено
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/prefer-optional-chain': 'error',
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
@@ -83,9 +104,7 @@ export default [
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
       '@typescript-eslint/array-type': ['error', { default: 'array' }],
-      // Отключаем правило naming-convention полностью
       '@typescript-eslint/naming-convention': 'off',
-      // Отключаем правила для пустых классов и классов только со статическими методами
       '@typescript-eslint/no-extraneous-class': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-namespace': 'off',
@@ -179,11 +198,24 @@ export default [
 
   // Test files configuration
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/load-tests/**/*.ts',
+      '**/tests/**/*.ts',
+    ],
     rules: {
-      // Relaxed rules for test files
+      // Relaxed rules for test files and load tests
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/consistent-type-assertions': 'off', // Разрешаем type assertions в тестах
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       'sonarjs/no-duplicate-string': 'off',
       'sonarjs/cognitive-complexity': 'off',
       'no-console': 'off',

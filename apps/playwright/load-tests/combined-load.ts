@@ -1,11 +1,26 @@
 import { type Page } from '@playwright/test';
 
 interface TestContext {
-  vars: Record<string, any>;
+  vars: Record<string, unknown>;
 }
 
 interface Events {
   emit: (event: string, metric: string, value: number) => void;
+}
+
+interface PerformanceData {
+  domContentLoaded: number;
+  loadComplete: number;
+  firstPaint: number;
+  firstContentfulPaint: number;
+}
+
+// Get metric prefix from environment or use default
+const METRIC_PREFIX = process.env.RABBITMQ_QUEUE_PREFIX || 'axion';
+
+// Helper function to create metric names
+function createMetricName(category: string, name: string): string {
+  return `${METRIC_PREFIX}.${category}.${name}`;
 }
 
 export = {
@@ -42,19 +57,20 @@ export = {
       name: 'Full User Journey',
       weight: 50,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const journeyStart = Date.now();
 
         try {
           await page.goto('/');
           await page.waitForLoadState('networkidle', { timeout: 10000 });
-          events.emit('counter', 'axion.journey.home_visit', 1);
+          events.emit('counter', createMetricName('journey', 'home_visit'), 1);
 
           await page.goto('/auth/login');
           await page.waitForSelector('form', { timeout: 10000 });
-          events.emit('counter', 'axion.journey.login_visit', 1);
+          events.emit('counter', createMetricName('journey', 'login_visit'), 1);
 
-          await page.fill('input[type="email"]', process.env.AUTH_USERNAME || 'admin@axion.dev');
+          const defaultUsername = `admin@${METRIC_PREFIX}.dev`;
+          await page.fill('input[type="email"]', process.env.AUTH_USERNAME || defaultUsername);
           await page.fill('input[type="password"]', process.env.AUTH_PASSWORD || 'admin123');
 
           const loginStart = Date.now();
@@ -63,16 +79,16 @@ export = {
           try {
             await page.waitForURL('/', { timeout: 10000 });
             const loginTime = Date.now() - loginStart;
-            events.emit('histogram', 'axion.journey.login_time', loginTime);
-            events.emit('counter', 'axion.journey.login_success', 1);
+            events.emit('histogram', createMetricName('journey', 'login_time'), loginTime);
+            events.emit('counter', createMetricName('journey', 'login_success'), 1);
           } catch (_loginError) {
-            events.emit('counter', 'axion.journey.login_failure', 1);
+            events.emit('counter', createMetricName('journey', 'login_failure'), 1);
           }
 
           const totalJourneyTime = Date.now() - journeyStart;
-          events.emit('histogram', 'axion.journey.total_time', totalJourneyTime);
+          events.emit('histogram', createMetricName('journey', 'total_time'), totalJourneyTime);
         } catch (error) {
-          events.emit('counter', 'axion.journey.errors', 1);
+          events.emit('counter', createMetricName('journey', 'errors'), 1);
           throw error;
         }
       },
@@ -81,7 +97,7 @@ export = {
       name: 'API Health Checks',
       weight: 25,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const startTime = Date.now();
 
         try {
@@ -100,13 +116,13 @@ export = {
           await page.goto('/');
           await page.waitForLoadState('networkidle', { timeout: 10000 });
 
-          events.emit('counter', 'axion.api.calls_detected', apiCalls);
-          events.emit('counter', 'axion.api.errors_detected', apiErrors);
+          events.emit('counter', createMetricName('api', 'calls_detected'), apiCalls);
+          events.emit('counter', createMetricName('api', 'errors_detected'), apiErrors);
 
           const healthCheckTime = Date.now() - startTime;
-          events.emit('histogram', 'axion.api.health_check_time', healthCheckTime);
+          events.emit('histogram', createMetricName('api', 'health_check_time'), healthCheckTime);
         } catch (error) {
-          events.emit('counter', 'axion.api.health_errors', 1);
+          events.emit('counter', createMetricName('api', 'health_errors'), 1);
           throw error;
         }
       },
@@ -115,14 +131,18 @@ export = {
       name: 'Page Performance Test',
       weight: 25,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         try {
           await page.addInitScript(() => {
             window.addEventListener('load', () => {
               setTimeout(() => {
-                const navigation = performance.getEntriesByType('navigation')[0] as any;
+                const navigation = performance.getEntriesByType(
+                  'navigation'
+                )[0] as PerformanceNavigationTiming;
                 if (navigation) {
-                  (window as any).performanceData = {
+                  (
+                    window as unknown as Window & { performanceData: PerformanceData }
+                  ).performanceData = {
                     domContentLoaded:
                       navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
                     loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
@@ -143,22 +163,33 @@ export = {
           await page.goto('/');
           await page.waitForLoadState('networkidle', { timeout: 10000 });
 
-          const perfData = await page.evaluate(() => (window as any).performanceData);
+          const perfData = await page.evaluate(
+            () =>
+              (window as unknown as Window & { performanceData: PerformanceData }).performanceData
+          );
 
           if (perfData) {
-            events.emit('histogram', 'axion.perf.dom_content_loaded', perfData.domContentLoaded);
-            events.emit('histogram', 'axion.perf.load_complete', perfData.loadComplete);
-            events.emit('histogram', 'axion.perf.first_paint', perfData.firstPaint);
             events.emit(
               'histogram',
-              'axion.perf.first_contentful_paint',
+              createMetricName('perf', 'dom_content_loaded'),
+              perfData.domContentLoaded
+            );
+            events.emit(
+              'histogram',
+              createMetricName('perf', 'load_complete'),
+              perfData.loadComplete
+            );
+            events.emit('histogram', createMetricName('perf', 'first_paint'), perfData.firstPaint);
+            events.emit(
+              'histogram',
+              createMetricName('perf', 'first_contentful_paint'),
               perfData.firstContentfulPaint
             );
           }
 
-          events.emit('counter', 'axion.perf.measurements_collected', 1);
+          events.emit('counter', createMetricName('perf', 'measurements_collected'), 1);
         } catch (error) {
-          events.emit('counter', 'axion.perf.measurement_errors', 1);
+          events.emit('counter', createMetricName('perf', 'measurement_errors'), 1);
           throw error;
         }
       },

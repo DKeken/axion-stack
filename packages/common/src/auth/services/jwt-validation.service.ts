@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@repo/infrastructure/database';
-import type { Request } from 'express';
 
 import type { MicroserviceUser } from '../../types/microservices.types';
 import type {
@@ -10,6 +9,7 @@ import type {
   RefreshTokenData,
   RefreshTokenPayload,
 } from '../types/tokens.type';
+import type { Request } from 'express';
 
 @Injectable()
 export class JwtValidationService {

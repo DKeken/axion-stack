@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
-import { HealthController } from './health.controller';
+import { HealthMicroserviceController } from './health-microservice.controller';
+import { HealthMicroserviceService } from './health-microservice.service';
 
 @Module({
   imports: [RedisModule],
-  controllers: [HealthController],
-  providers: [PrismaService],
+  controllers: [HealthMicroserviceController],
+  providers: [PrismaService, HealthMicroserviceService],
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class HealthModule {}

@@ -67,8 +67,8 @@ export const vibrate = (pattern: number | number[] = VIBRATION_PATTERNS.medium):
 
   try {
     navigator.vibrate(pattern);
-  } catch (error) {
-    console.warn('Vibration failed:', error);
+  } catch (_error) {
+    // Vibration failed silently
   }
 };
 
@@ -80,8 +80,8 @@ export const stopVibration = (): void => {
 
   try {
     navigator.vibrate(0);
-  } catch (error) {
-    console.warn('Stop vibration failed:', error);
+  } catch (_error) {
+    // Stop vibration failed silently
   }
 };
 

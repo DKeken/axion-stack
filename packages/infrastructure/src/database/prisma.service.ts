@@ -59,9 +59,9 @@ export class PrismaService
 
     // Development-specific setup
     if (!isProduction) {
-      // Log queries in development
+      // Log queries in development (without sensitive parameters)
       this.$on('query', (e) => {
-        this.logger.debug(`Query: ${e.query} -- Params: ${e.params} -- Duration: ${e.duration}ms`);
+        this.logger.debug(`Query executed -- Duration: ${e.duration}ms`);
       });
     }
   }

@@ -1,10 +1,15 @@
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  TsRestValidationUtils,
+  type MicroserviceRequestPayload,
+  type MicroserviceResponse,
+} from '@repo/common';
+import { authContract } from '@repo/contracts';
 
 import { AuthService } from './auth.service';
 
-import type { MicroserviceRequest, MicroserviceResponse } from '@repo/common/types';
-import type { LoginDto, RefreshTokenDto, RegisterDto } from '@repo/contracts';
+// No need for custom interface - use MicroserviceRequestPayload directly with type safety
 
 @Controller()
 export class AuthMicroserviceController {
@@ -12,154 +17,173 @@ export class AuthMicroserviceController {
 
   constructor(private readonly authService: AuthService) {}
 
+  @MessagePattern('health.check')
+  async healthCheck(): Promise<{ status: string; timestamp: string; service: string }> {
+    return {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'auth',
+    };
+  }
+
   @MessagePattern('auth.register')
-  async register(@Payload() request: MicroserviceRequest): Promise<MicroserviceResponse> {
+  async register(@Payload() payload: MicroserviceRequestPayload): Promise<MicroserviceResponse> {
+    // Validate request against ts-rest contract
+    const validation = TsRestValidationUtils.validateRequest(authContract.register, payload);
+
+    if (!validation.success) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Validation failed', validation.error);
+    }
+
+    if (!validation.data.body) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Request body is required');
+    }
+
     try {
-      this.logger.debug('Processing auth.register request');
-
-      const registerDto = request.body as RegisterDto;
-      // Add fingerprint from headers if not in body
-      if (!registerDto.fingerprint && request.headers['x-fingerprint']) {
-        registerDto.fingerprint = request.headers['x-fingerprint'];
-      }
-
-      const result = await this.authService.register(registerDto);
-
-      return {
-        status: 201,
-        data: result,
-      };
+      // After validation, data.body is properly typed as RegisterDto
+      const result = await this.authService.register(validation.data.body);
+      return TsRestValidationUtils.createResponse(201, result);
     } catch (error) {
-      this.logger.error('Error in auth.register:', error);
-      return {
-        status: error instanceof Error && error.message.includes('already exists') ? 409 : 500,
-        error: error instanceof Error ? error.message : 'Registration failed',
-      };
+      this.logger.error('Auth register error:', error);
+      return TsRestValidationUtils.createErrorResponse(
+        400,
+        'Registration failed',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 
   @MessagePattern('auth.login')
-  async login(@Payload() request: MicroserviceRequest): Promise<MicroserviceResponse> {
+  async login(@Payload() payload: MicroserviceRequestPayload): Promise<MicroserviceResponse> {
+    // Validate request against ts-rest contract
+    const validation = TsRestValidationUtils.validateRequest(authContract.login, payload);
+
+    if (!validation.success) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Validation failed', validation.error);
+    }
+
+    if (!validation.data.body) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Request body is required');
+    }
+
     try {
-      this.logger.debug('Processing auth.login request');
-
-      const loginDto = request.body as LoginDto;
-      // Add fingerprint from headers if not in body
-      if (!loginDto.fingerprint && request.headers['x-fingerprint']) {
-        loginDto.fingerprint = request.headers['x-fingerprint'];
-      }
-
-      const result = await this.authService.login(loginDto);
-
-      return {
-        status: 200,
-        data: result,
-      };
+      // After validation, data.body is properly typed as LoginDto
+      const result = await this.authService.login(validation.data.body);
+      return TsRestValidationUtils.createResponse(200, result);
     } catch (error) {
-      this.logger.error('Error in auth.login:', error);
-      return {
-        status: error instanceof Error && error.message.includes('Invalid') ? 401 : 500,
-        error: error instanceof Error ? error.message : 'Login failed',
-      };
+      this.logger.error('Auth login error:', error);
+      return TsRestValidationUtils.createErrorResponse(
+        401,
+        'Login failed',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 
   @MessagePattern('auth.refresh')
-  async refresh(@Payload() request: MicroserviceRequest): Promise<MicroserviceResponse> {
-    try {
-      this.logger.debug('Processing auth.refresh request');
+  async refresh(@Payload() payload: MicroserviceRequestPayload): Promise<MicroserviceResponse> {
+    // Validate request against ts-rest contract
+    const validation = TsRestValidationUtils.validateRequest(authContract.refresh, payload);
 
-      // В микросервисной архитектуре refresh token data должны быть извлечены из токена на уровне gateway
-      const refreshTokenData = request.user?.refreshTokenData;
-      if (!refreshTokenData) {
-        return {
-          status: 401,
-          error: 'Refresh token data not available',
-        };
+    if (!validation.success) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Validation failed', validation.error);
+    }
+
+    if (!validation.data.body) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Request body is required');
+    }
+
+    try {
+      // For refresh, we need to get the refresh token from somewhere
+      // Usually it would be in headers/cookies, but for now get from user context
+      if (!payload.user?.refreshTokenData?.jti) {
+        return TsRestValidationUtils.createErrorResponse(400, 'Refresh token is required');
       }
 
-      const refreshDto = request.body as RefreshTokenDto;
-      const fingerprint = refreshDto?.fingerprint ?? request.headers['x-fingerprint'];
+      // Get fingerprint from validated body (now properly typed)
+      const refreshBody = validation.data.body;
 
-      const result = await this.authService.refreshTokens(refreshTokenData, fingerprint);
+      // Use refresh token data from user context
+      const baseRefreshTokenData = payload.user.refreshTokenData;
+      if (!baseRefreshTokenData) {
+        return TsRestValidationUtils.createErrorResponse(400, 'Refresh token data not found');
+      }
 
-      return {
-        status: 200,
-        data: result,
+      const refreshTokenData = {
+        ...baseRefreshTokenData,
+        fingerprintHash: refreshBody?.fingerprint,
       };
+      const result = await this.authService.refreshTokens(
+        refreshTokenData,
+        refreshBody?.fingerprint
+      );
+      return TsRestValidationUtils.createResponse(200, result);
     } catch (error) {
-      this.logger.error('Error in auth.refresh:', error);
-      return {
-        status: error instanceof Error && error.message.includes('Invalid') ? 401 : 500,
-        error: error instanceof Error ? error.message : 'Token refresh failed',
-      };
+      this.logger.error('Auth refresh error:', error);
+      return TsRestValidationUtils.createErrorResponse(
+        401,
+        'Token refresh failed',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 
   @MessagePattern('auth.logout')
-  async logout(@Payload() request: MicroserviceRequest): Promise<MicroserviceResponse> {
-    try {
-      this.logger.debug('Processing auth.logout request');
+  async logout(@Payload() payload: MicroserviceRequestPayload): Promise<MicroserviceResponse> {
+    // Validate request against ts-rest contract
+    const validation = TsRestValidationUtils.validateRequest(authContract.logout, payload);
 
-      // В микросервисной архитектуре refresh token data должны быть извлечены из токена на уровне gateway
-      const refreshTokenData = request.user?.refreshTokenData;
+    if (!validation.success) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Validation failed', validation.error);
+    }
+
+    if (!payload.user?.id) {
+      return TsRestValidationUtils.createErrorResponse(401, 'User not authenticated for logout');
+    }
+
+    try {
+      // Use refresh token data from user context
+      const { refreshTokenData } = payload.user;
       if (!refreshTokenData) {
-        return {
-          status: 401,
-          error: 'Refresh token data not available',
-        };
+        return TsRestValidationUtils.createErrorResponse(400, 'Refresh token data not found');
       }
 
       await this.authService.logout(refreshTokenData);
-
-      return {
-        status: 200,
-        data: { message: 'Logged out successfully' },
-      };
+      return TsRestValidationUtils.createResponse(200, { message: 'Logged out successfully' });
     } catch (error) {
-      this.logger.error('Error in auth.logout:', error);
-      return {
-        status: 500,
-        error: error instanceof Error ? error.message : 'Logout failed',
-      };
+      this.logger.error('Auth logout error:', error);
+      return TsRestValidationUtils.createErrorResponse(
+        400,
+        'Logout failed',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 
   @MessagePattern('auth.profile')
-  async profile(@Payload() request: MicroserviceRequest): Promise<MicroserviceResponse> {
+  async profile(@Payload() payload: MicroserviceRequestPayload): Promise<MicroserviceResponse> {
+    // Validate request against ts-rest contract (profile usually doesn't need body validation)
+    const validation = TsRestValidationUtils.validateRequest(authContract.profile, payload);
+
+    if (!validation.success) {
+      return TsRestValidationUtils.createErrorResponse(400, 'Validation failed', validation.error);
+    }
+
+    if (!payload.user?.id) {
+      return TsRestValidationUtils.createErrorResponse(401, 'User not authenticated');
+    }
+
     try {
-      this.logger.debug('Processing auth.profile request');
-
-      // В микросервисной архитектуре пользователь уже извлечен из токена на уровне gateway
-      const { user } = request;
-      if (!user) {
-        return {
-          status: 401,
-          error: 'User not authenticated',
-        };
-      }
-
-      return {
-        status: 200,
-        data: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar,
-          status: user.status,
-          emailVerified: user.emailVerified,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-          emailVerifiedAt: user.emailVerifiedAt,
-          lastLoginAt: user.lastLoginAt,
-        },
-      };
+      const userId = payload.user.id;
+      const result = await this.authService.getProfile(userId);
+      return TsRestValidationUtils.createResponse(200, result);
     } catch (error) {
-      this.logger.error('Error in auth.profile:', error);
-      return {
-        status: 500,
-        error: error instanceof Error ? error.message : 'Profile fetch failed',
-      };
+      this.logger.error('Auth profile error:', error);
+      return TsRestValidationUtils.createErrorResponse(
+        404,
+        'Profile not found',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 }

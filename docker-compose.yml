@@ -189,7 +189,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
-      PORT: 3002
+      # PORT removed - microservice only via RabbitMQ
       DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -200,10 +200,8 @@ services:
       RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
       JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
       JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
-      CORS_ORIGIN: "*"
       PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
-    ports:
-      - "3002:3002"
+    # No HTTP ports exposed - microservice only via RabbitMQ
     volumes:
       - ./apps/_services/auth:/app
       - /app/node_modules
@@ -227,7 +225,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
-      PORT: 3003
+      # PORT removed - microservice only via RabbitMQ
       DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -236,10 +234,8 @@ services:
       REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
       RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
-      CORS_ORIGIN: "*"
       PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
-    ports:
-      - "3003:3003"
+    # No HTTP ports exposed - microservice only via RabbitMQ
     volumes:
       - ./apps/_services/user:/app
       - /app/node_modules

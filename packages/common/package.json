@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "echo '@repo/common dev mode (no-op)'",
     "build": "echo '@repo/common build mode (no-op)'",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsc --noEmit --project tsconfig.json",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },
   "dependencies": {

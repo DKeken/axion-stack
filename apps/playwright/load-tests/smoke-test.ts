@@ -1,11 +1,19 @@
 import { type Page } from '@playwright/test';
 
 interface TestContext {
-  vars: Record<string, any>;
+  vars: Record<string, unknown>;
 }
 
 interface Events {
   emit: (event: string, metric: string, value: number) => void;
+}
+
+// Get metric prefix from environment or use default
+const METRIC_PREFIX = process.env.RABBITMQ_QUEUE_PREFIX || 'axion';
+
+// Helper function to create metric names
+function createMetricName(category: string, name: string): string {
+  return `${METRIC_PREFIX}.${category}.${name}`;
 }
 
 export = {
@@ -44,7 +52,7 @@ export = {
     {
       name: 'Axion Stack Smoke Test',
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const startTime = Date.now();
 
         try {
@@ -52,22 +60,22 @@ export = {
           await page.waitForLoadState('networkidle', { timeout: 10000 });
 
           const loadTime = Date.now() - startTime;
-          events.emit('histogram', 'axion.smoke.page_load_time', loadTime);
+          events.emit('histogram', createMetricName('smoke', 'page_load_time'), loadTime);
 
           const body = page.locator('body');
           if (await body.isVisible()) {
-            events.emit('counter', 'axion.smoke.page_load.success', 1);
+            events.emit('counter', createMetricName('smoke', 'page_load.success'), 1);
           } else {
-            events.emit('counter', 'axion.smoke.page_load.failure', 1);
+            events.emit('counter', createMetricName('smoke', 'page_load.failure'), 1);
             throw new Error('Page body not visible');
           }
 
           const nav = page.locator('nav, header, [role="navigation"]').first();
           if (await nav.isVisible()) {
-            events.emit('counter', 'axion.smoke.navigation.found', 1);
+            events.emit('counter', createMetricName('smoke', 'navigation.found'), 1);
           }
         } catch (error) {
-          events.emit('counter', 'axion.smoke.errors', 1);
+          events.emit('counter', createMetricName('smoke', 'errors'), 1);
           throw error;
         }
       },

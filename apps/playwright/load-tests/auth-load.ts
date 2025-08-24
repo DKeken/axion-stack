@@ -1,11 +1,19 @@
 import { type Page } from '@playwright/test';
 
 interface TestContext {
-  vars: Record<string, any>;
+  vars: Record<string, unknown>;
 }
 
 interface Events {
   emit: (event: string, metric: string, value: number) => void;
+}
+
+// Get metric prefix from environment or use default
+const METRIC_PREFIX = process.env.RABBITMQ_QUEUE_PREFIX || 'axion';
+
+// Helper function to create metric names
+function createMetricName(category: string, name: string): string {
+  return `${METRIC_PREFIX}.${category}.${name}`;
 }
 
 export = {
@@ -41,19 +49,20 @@ export = {
       name: 'Authentication Flow Test',
       weight: 70,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const startTime = Date.now();
 
         try {
           await page.goto('/auth/login');
           const navigationTime = Date.now() - startTime;
-          events.emit('histogram', 'axion.auth.navigation_time', navigationTime);
+          events.emit('histogram', createMetricName('auth', 'navigation_time'), navigationTime);
 
           await page.waitForSelector('form', { timeout: 10000 });
           const formLoadTime = Date.now() - startTime;
-          events.emit('histogram', 'axion.auth.form_load_time', formLoadTime);
+          events.emit('histogram', createMetricName('auth', 'form_load_time'), formLoadTime);
 
-          const username = process.env.AUTH_USERNAME || 'admin@axion.dev';
+          const defaultUsername = `admin@${METRIC_PREFIX}.dev`;
+          const username = process.env.AUTH_USERNAME || defaultUsername;
           const password = process.env.AUTH_PASSWORD || 'admin123';
 
           await page.fill('input[type="email"]', username);
@@ -65,27 +74,27 @@ export = {
           try {
             await page.waitForURL('/', { timeout: 10000 });
             const authTime = Date.now() - submitStartTime;
-            events.emit('histogram', 'axion.auth.login_time', authTime);
-            events.emit('counter', 'axion.auth.login.success', 1);
+            events.emit('histogram', createMetricName('auth', 'login_time'), authTime);
+            events.emit('counter', createMetricName('auth', 'login.success'), 1);
 
             const bodyText = await page.locator('body').textContent();
             if (!bodyText?.includes('login')) {
-              events.emit('counter', 'axion.auth.verification.success', 1);
+              events.emit('counter', createMetricName('auth', 'verification.success'), 1);
             } else {
-              events.emit('counter', 'axion.auth.verification.failure', 1);
+              events.emit('counter', createMetricName('auth', 'verification.failure'), 1);
             }
           } catch (_navError) {
-            events.emit('counter', 'axion.auth.login.failure', 1);
+            events.emit('counter', createMetricName('auth', 'login.failure'), 1);
 
             const errorElement = page.locator('[role="alert"], .error, .alert-danger').first();
             if (await errorElement.isVisible()) {
-              events.emit('counter', 'axion.auth.login.error_shown', 1);
+              events.emit('counter', createMetricName('auth', 'login.error_shown'), 1);
             }
 
             throw new Error('Login failed or navigation timeout');
           }
         } catch (error) {
-          events.emit('counter', 'axion.auth.errors', 1);
+          events.emit('counter', createMetricName('auth', 'errors'), 1);
           throw error;
         }
       },
@@ -94,7 +103,7 @@ export = {
       name: 'Login Page Load Test',
       weight: 30,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const startTime = Date.now();
 
         try {
@@ -102,7 +111,7 @@ export = {
           await page.waitForLoadState('networkidle', { timeout: 10000 });
 
           const loadTime = Date.now() - startTime;
-          events.emit('histogram', 'axion.auth.login_page_load_time', loadTime);
+          events.emit('histogram', createMetricName('auth', 'login_page_load_time'), loadTime);
 
           const form = page.locator('form');
           const emailInput = page.locator('input[type="email"]');
@@ -115,12 +124,12 @@ export = {
             (await passwordInput.isVisible()) &&
             (await submitButton.isVisible())
           ) {
-            events.emit('counter', 'axion.auth.login_page.complete', 1);
+            events.emit('counter', createMetricName('auth', 'login_page.complete'), 1);
           } else {
-            events.emit('counter', 'axion.auth.login_page.incomplete', 1);
+            events.emit('counter', createMetricName('auth', 'login_page.incomplete'), 1);
           }
         } catch (error) {
-          events.emit('counter', 'axion.auth.login_page.errors', 1);
+          events.emit('counter', createMetricName('auth', 'login_page.errors'), 1);
           throw error;
         }
       },

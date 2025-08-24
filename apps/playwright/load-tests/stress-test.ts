@@ -1,11 +1,19 @@
 import { type Page } from '@playwright/test';
 
 interface TestContext {
-  vars: Record<string, any>;
+  vars: Record<string, unknown>;
 }
 
 interface Events {
   emit: (event: string, metric: string, value: number) => void;
+}
+
+// Get metric prefix from environment or use default
+const METRIC_PREFIX = process.env.RABBITMQ_QUEUE_PREFIX || 'axion';
+
+// Helper function to create metric names
+function createMetricName(category: string, name: string): string {
+  return `${METRIC_PREFIX}.${category}.${name}`;
 }
 
 export = {
@@ -42,7 +50,7 @@ export = {
       name: 'Mixed Operations Stress Test',
       weight: 60,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const startTime = Date.now();
 
         try {
@@ -53,27 +61,31 @@ export = {
             case 'home_page':
               await page.goto('/');
               await page.waitForLoadState('networkidle', { timeout: 5000 });
-              events.emit('counter', 'axion.stress.home_page.requests', 1);
+              events.emit('counter', createMetricName('stress', 'home_page.requests'), 1);
               break;
 
             case 'auth_page':
               await page.goto('/auth/login');
               await page.waitForSelector('form', { timeout: 5000 });
-              events.emit('counter', 'axion.stress.auth_page.requests', 1);
+              events.emit('counter', createMetricName('stress', 'auth_page.requests'), 1);
               break;
 
             case 'api_health':
               await page.goto('/');
               await page.waitForLoadState('networkidle', { timeout: 5000 });
-              events.emit('counter', 'axion.stress.api_health.requests', 1);
+              events.emit('counter', createMetricName('stress', 'api_health.requests'), 1);
               break;
           }
 
           const responseTime = Date.now() - startTime;
-          events.emit('histogram', `axion.stress.${scenario}.response_time`, responseTime);
-          events.emit('counter', `axion.stress.${scenario}.success`, 1);
+          events.emit(
+            'histogram',
+            createMetricName('stress', `${scenario}.response_time`),
+            responseTime
+          );
+          events.emit('counter', createMetricName('stress', `${scenario}.success`), 1);
         } catch (error) {
-          events.emit('counter', 'axion.stress.errors', 1);
+          events.emit('counter', createMetricName('stress', 'errors'), 1);
           throw error;
         }
       },
@@ -82,7 +94,7 @@ export = {
       name: 'Rapid Navigation Test',
       weight: 40,
       engine: 'playwright',
-      testFunction: async (page: Page, context: TestContext, events: Events) => {
+      testFunction: async (page: Page, _context: TestContext, events: Events) => {
         const startTime = Date.now();
 
         try {
@@ -94,14 +106,14 @@ export = {
             await page.waitForLoadState('domcontentloaded', { timeout: 3000 });
 
             const navTime = Date.now() - navStart;
-            events.emit('histogram', 'axion.stress.rapid_nav.page_time', navTime);
+            events.emit('histogram', createMetricName('stress', 'rapid_nav.page_time'), navTime);
           }
 
           const totalTime = Date.now() - startTime;
-          events.emit('histogram', 'axion.stress.rapid_nav.total_time', totalTime);
-          events.emit('counter', 'axion.stress.rapid_nav.success', 1);
+          events.emit('histogram', createMetricName('stress', 'rapid_nav.total_time'), totalTime);
+          events.emit('counter', createMetricName('stress', 'rapid_nav.success'), 1);
         } catch (error) {
-          events.emit('counter', 'axion.stress.rapid_nav.errors', 1);
+          events.emit('counter', createMetricName('stress', 'rapid_nav.errors'), 1);
           throw error;
         }
       },

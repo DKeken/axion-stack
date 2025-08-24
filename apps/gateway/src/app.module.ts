@@ -8,7 +8,7 @@ import {
   LoggingInterceptor,
   TransformInterceptor,
 } from '@repo/common';
-import { PrismaService } from '@repo/infrastructure';
+import { PrismaService, RedisModule } from '@repo/infrastructure';
 
 import { validationSchema } from './config/validation';
 import { GatewayModule } from './modules/gateway/gateway.module';
@@ -21,6 +21,9 @@ import { HealthModule } from './modules/health/health.module';
       isGlobal: true,
       validate: validationSchema,
     }),
+
+    // Infrastructure
+    RedisModule,
 
     // Rate limiting
     ThrottlerModule.forRootAsync({

@@ -1,18 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_FILTER, DiscoveryModule } from '@nestjs/core';
 import {
-  HttpExceptionFilter,
   PrismaExceptionFilter,
-  LoggingInterceptor,
-  TransformInterceptor,
+  ServiceRegistryModule,
+  MicroserviceRegistryService,
+  ContractDiscoveryService,
 } from '@repo/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
 import { validationSchema } from './config/validation';
 import { AuthModule } from './modules/auth/auth.module';
-import { AccessTokenGuard } from './modules/auth/guards/access-token.guard';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -23,18 +21,15 @@ import { HealthModule } from './modules/health/health.module';
       validate: validationSchema,
     }),
 
-    // Redis cache
+    // Infrastructure
     RedisModule,
-
-    // Rate limiting
-    ThrottlerModule.forRootAsync({
+    DiscoveryModule, // 🔍 NestJS Discovery для автоматического обнаружения MessagePattern
+    ServiceRegistryModule.forRootAsync({
       useFactory: () => ({
-        throttlers: [
-          {
-            ttl: parseInt(process.env.RATE_LIMIT_TTL ?? '60', 10) * 1000,
-            limit: parseInt(process.env.RATE_LIMIT_LIMIT ?? '100', 10),
-          },
-        ],
+        registryPrefix: 'axion:services',
+        heartbeatInterval: 30000,
+        serviceTtl: 120, // Унифицируем TTL для стабильности
+        enableCleanup: true,
       }),
     }),
 
@@ -46,31 +41,10 @@ import { HealthModule } from './modules/health/health.module';
     // Global database service
     PrismaService,
 
-    // Global guards
-    {
-      provide: APP_GUARD,
-      useClass: AccessTokenGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // Service Discovery & Contract Validation
+    ContractDiscoveryService, // 🎯 Автоматическая валидация против ts-rest контрактов
+    MicroserviceRegistryService,
 
-    // Global interceptors
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
-
-    // Global exception filters
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
     {
       provide: APP_FILTER,
       useClass: PrismaExceptionFilter,

@@ -8,9 +8,8 @@ import { UsersService } from './users.service';
 
 @Module({
   imports: [RedisModule],
-  controllers: [UsersController, UsersMicroserviceController],
+  controllers: [UsersMicroserviceController],
   providers: [UsersService, UsersRepository, PrismaService],
   exports: [UsersService, UsersRepository],
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class UsersModule {}

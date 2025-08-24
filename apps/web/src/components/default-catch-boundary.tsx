@@ -19,7 +19,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
 
   // Only log in development
   if (process.env.NODE_ENV === 'development') {
-    console.error('DefaultCatchBoundary Error:', error);
+    // Error will be handled by error boundary
   }
 
   return (

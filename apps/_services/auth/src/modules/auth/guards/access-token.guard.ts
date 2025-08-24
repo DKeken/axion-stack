@@ -22,7 +22,9 @@ export class AccessTokenGuard extends AuthGuard('access-jwt') {
     }
 
     // Add logging to see what's happening
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<{
+      headers: { authorization?: string };
+    }>();
     const _authHeader = request.headers.authorization;
 
     return super.canActivate(context);

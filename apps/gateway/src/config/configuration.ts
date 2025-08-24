@@ -21,6 +21,10 @@ const configSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
+  // API Configuration
+  API_PREFIX: z.string().default('/api/v1'),
+  API_VERSION: z.string().default('v1'),
+
   // Security
   CORS_ORIGIN: z.string().default('*'),
   RATE_LIMIT_TTL: z.coerce.number().min(1).default(60),
@@ -32,8 +36,10 @@ const configSchema = z.object({
 
   // RabbitMQ
   RABBITMQ_URL: z.string().default('amqp://localhost:5672'),
-  RABBITMQ_EXCHANGE_NAME: z.string().default('axion.events'),
-  RABBITMQ_QUEUE_PREFIX: z.string().default('axion'),
+  RABBITMQ_EXCHANGE_NAME: z
+    .string()
+    .default(`${process.env.RABBITMQ_QUEUE_PREFIX || 'axion'}.events`),
+  RABBITMQ_QUEUE_PREFIX: z.string().default(process.env.RABBITMQ_QUEUE_PREFIX || 'axion'),
   RABBITMQ_RETRY_ATTEMPTS: z.coerce.number().min(1).max(10).default(3),
   RABBITMQ_RETRY_DELAY: z.coerce.number().min(100).default(1000),
 
@@ -53,17 +59,14 @@ const configSchema = z.object({
   MODELS_CACHE_TTL: z.coerce.number().min(60).default(300), // 5 minutes
 });
 
-export type AppConfig = z.infer<typeof configSchema>;
+export type ConfigSchema = z.infer<typeof configSchema>;
+export type AppConfig = ConfigSchema;
 
-export function validateConfig(): AppConfig {
+export function validateConfig(): ConfigSchema {
   const result = configSchema.safeParse(process.env);
 
   if (!result.success) {
-    const errors = result.error.format();
-    // Log detailed errors only in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Configuration validation failed:', errors);
-    }
+    // Never log detailed configuration errors as they may contain secrets
     throw new Error('Configuration validation failed. Check environment variables.');
   }
 

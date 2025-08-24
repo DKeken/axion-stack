@@ -26,25 +26,28 @@ const configSchema = z.object({
   RATE_LIMIT_TTL: z.coerce.number().min(1).default(60),
   RATE_LIMIT_LIMIT: z.coerce.number().min(1).default(100),
 
+  // Service Discovery
+  SERVICE_NAME: z.string().default('users'),
+  SERVICE_VERSION: z.string().default('1.0.0'),
+
   // RabbitMQ
   RABBITMQ_URL: z.string().default('amqp://localhost:5672'),
-  RABBITMQ_EXCHANGE_NAME: z.string().default('axion.events'),
-  RABBITMQ_QUEUE_PREFIX: z.string().default('axion'),
+  RABBITMQ_EXCHANGE_NAME: z
+    .string()
+    .default(`${process.env.RABBITMQ_QUEUE_PREFIX || 'axion'}.events`),
+  RABBITMQ_QUEUE_PREFIX: z.string().default(process.env.RABBITMQ_QUEUE_PREFIX || 'axion'),
   RABBITMQ_RETRY_ATTEMPTS: z.coerce.number().min(1).max(10).default(3),
   RABBITMQ_RETRY_DELAY: z.coerce.number().min(100).default(1000),
 });
 
-export type AppConfig = z.infer<typeof configSchema>;
+export type ConfigSchema = z.infer<typeof configSchema>;
+export type AppConfig = ConfigSchema;
 
-export function validateConfig(): AppConfig {
+export function validateConfig(): ConfigSchema {
   const result = configSchema.safeParse(process.env);
 
   if (!result.success) {
-    const errors = result.error.format();
-    // Log detailed errors only in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Configuration validation failed:', errors);
-    }
+    // Never log detailed configuration errors as they may contain secrets
     throw new Error('Configuration validation failed. Check environment variables.');
   }
 

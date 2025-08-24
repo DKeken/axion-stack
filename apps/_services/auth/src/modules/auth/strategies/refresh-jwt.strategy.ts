@@ -17,8 +17,8 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt'
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         // Try to extract from httpOnly cookie first
-        (request: Request) => {
-          return request?.cookies?.refreshToken;
+        (request: Request & { cookies?: { refreshToken?: string } }) => {
+          return request?.cookies?.refreshToken || null;
         },
         // Fallback to Authorization header
         ExtractJwt.fromAuthHeaderAsBearerToken(),

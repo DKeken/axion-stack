@@ -4,6 +4,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtValidationService } from '@repo/common';
 import { PrismaService } from '@repo/infrastructure/database';
 
+import { ServiceDiscoveryModule } from '../service-discovery/service-discovery.module';
+
 import { GatewayController } from './gateway.controller';
 import { GatewayService } from './gateway.service';
 
@@ -11,6 +13,7 @@ import { GatewayService } from './gateway.service';
   imports: [
     ConfigModule,
     JwtModule.register({}), // Empty config since we manually specify secrets
+    ServiceDiscoveryModule,
   ],
   controllers: [GatewayController],
   providers: [GatewayService, JwtValidationService, PrismaService],

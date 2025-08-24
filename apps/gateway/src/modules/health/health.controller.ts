@@ -1,58 +1,37 @@
 import { Controller, Get } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Public } from '@repo/common';
-import fetch from 'node-fetch';
 
-import type { AppConfig } from '@/config/configuration';
+import { HealthRabbitMQService } from './health-rabbitmq.service';
 
 @Controller('health')
 export class HealthController {
-  private readonly serviceUrls: Record<string, string>;
-
-  constructor(private readonly configService: ConfigService<AppConfig>) {
-    this.serviceUrls = {
-      'auth-service': this.configService.get('AUTH_SERVICE_URL') ?? 'http://localhost:3002',
-      'user-service': this.configService.get('USER_SERVICE_URL') ?? 'http://localhost:3003',
-    };
-  }
+  constructor(private readonly healthRabbitMQService: HealthRabbitMQService) {}
 
   @Get()
   @Public()
   async check() {
     const checks: Record<string, { status: 'up' | 'down'; error?: string; details?: unknown }> = {};
 
-    // Check microservices health
-    for (const [serviceName, serviceUrl] of Object.entries(this.serviceUrls)) {
-      try {
-        const start = Date.now();
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+    // Check microservices health via RabbitMQ
+    try {
+      const serviceHealths = await this.healthRabbitMQService.checkAllServices(5000);
 
-        const response = await fetch(`${serviceUrl}/health/liveness`, {
-          method: 'GET',
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-        const latency = Date.now() - start;
-
-        if (response.ok) {
-          checks[serviceName] = {
-            status: 'up',
-            details: { latency, url: serviceUrl },
-          };
-        } else {
-          checks[serviceName] = {
-            status: 'down',
-            error: `HTTP ${response.status}: ${response.statusText}`,
-          };
-        }
-      } catch (error) {
-        checks[serviceName] = {
-          status: 'down',
-          error: error instanceof Error ? error.message : 'Service unreachable',
+      serviceHealths.forEach((serviceHealth) => {
+        checks[`${serviceHealth.service}-service`] = {
+          status: serviceHealth.status === 'ok' ? 'up' : 'down',
+          error: serviceHealth.error,
+          details: {
+            responseTime: serviceHealth.responseTime,
+            checks: serviceHealth.data?.checks,
+            uptime: serviceHealth.data?.uptime,
+          },
         };
-      }
+      });
+    } catch (error) {
+      checks.microservices = {
+        status: 'down',
+        error: error instanceof Error ? error.message : 'Failed to check microservices',
+      };
     }
 
     const allUp = Object.values(checks).every((check) => check.status === 'up');
@@ -63,6 +42,27 @@ export class HealthController {
       uptime: process.uptime(),
       checks,
     };
+  }
+
+  @Get('microservices')
+  @Public()
+  async checkMicroservices() {
+    try {
+      const serviceHealths = await this.healthRabbitMQService.checkAllServices(5000);
+
+      return {
+        status: serviceHealths.every((s) => s.status === 'ok') ? 'ok' : 'error',
+        timestamp: new Date().toISOString(),
+        services: serviceHealths,
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Failed to check microservices',
+        services: [],
+      };
+    }
   }
 
   @Get('liveness')
@@ -79,38 +79,36 @@ export class HealthController {
   @Get('readiness')
   @Public()
   async readiness() {
-    const serviceChecks: Record<string, string> = {};
-    let allReady = true;
+    try {
+      const serviceHealths = await this.healthRabbitMQService.checkAllServices(3000);
+      const serviceChecks: Record<string, string> = {};
+      let allReady = true;
 
-    // Check if all microservices are ready
-    for (const [serviceName, serviceUrl] of Object.entries(this.serviceUrls)) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-        const response = await fetch(`${serviceUrl}/health/liveness`, {
-          method: 'GET',
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
+      serviceHealths.forEach((serviceHealth) => {
+        const serviceName = `${serviceHealth.service}-service`;
+        if (serviceHealth.status === 'ok') {
           serviceChecks[serviceName] = 'ready';
+        } else if (serviceHealth.status === 'timeout') {
+          serviceChecks[serviceName] = 'timeout';
+          allReady = false;
         } else {
           serviceChecks[serviceName] = 'not ready';
           allReady = false;
         }
-      } catch {
-        serviceChecks[serviceName] = 'unreachable';
-        allReady = false;
-      }
-    }
+      });
 
-    return {
-      status: allReady ? 'ready' : 'not ready',
-      timestamp: new Date().toISOString(),
-      checks: serviceChecks,
-    };
+      return {
+        status: allReady ? 'ready' : 'not ready',
+        timestamp: new Date().toISOString(),
+        checks: serviceChecks,
+      };
+    } catch (error) {
+      return {
+        status: 'not ready',
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Failed to check readiness',
+        checks: {},
+      };
+    }
   }
 }

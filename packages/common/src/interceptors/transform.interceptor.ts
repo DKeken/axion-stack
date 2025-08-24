@@ -4,8 +4,9 @@ import {
   Injectable,
   type NestInterceptor,
 } from '@nestjs/common';
-import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+import type { Observable } from 'rxjs';
 
 export interface Response<T> {
   data: T;

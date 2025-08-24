@@ -265,6 +265,40 @@ export class AuthService {
     return parseInt(amount, 10) * multiplier;
   }
 
+  async getProfile(userId: string): Promise<AuthUserResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        status: true,
+        email: true,
+        name: true,
+        avatar: true,
+        emailVerified: true,
+        emailVerifiedAt: true,
+        timezone: true,
+        language: true,
+        theme: true,
+        lastLoginAt: true,
+        lastLoginIp: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+      lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
+    };
+  }
+
   async cleanupExpiredTokens(): Promise<void> {
     await this.prisma.refreshToken.deleteMany({
       where: {

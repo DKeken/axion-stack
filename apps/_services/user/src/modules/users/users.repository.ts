@@ -108,7 +108,7 @@ export class UsersRepository extends CachedBaseRepository<
       where,
       ...(options?.select ? { select: options.select } : {}),
       ...(options?.include ? { include: options.include } : {}),
-    }) as Promise<User | null>;
+    });
   }
 
   async findFirst(
@@ -127,7 +127,7 @@ export class UsersRepository extends CachedBaseRepository<
       orderBy: options?.orderBy,
       ...(options?.select ? { select: options.select } : {}),
       ...(options?.include ? { include: options.include } : {}),
-    }) as Promise<User | null>;
+    });
   }
 
   async create(
@@ -144,7 +144,7 @@ export class UsersRepository extends CachedBaseRepository<
       data,
       ...(options?.select ? { select: options.select } : {}),
       ...(options?.include ? { include: options.include } : {}),
-    }) as Promise<User>;
+    });
   }
 
   async update(
@@ -163,13 +163,13 @@ export class UsersRepository extends CachedBaseRepository<
       data,
       ...(options?.select ? { select: options.select } : {}),
       ...(options?.include ? { include: options.include } : {}),
-    }) as Promise<User>;
+    });
   }
 
   async delete(where: Prisma.UserWhereUniqueInput, db?: DatabaseClient): Promise<User> {
     const client = this.getDb(db);
 
-    return client.user.delete({ where }) as Promise<User>;
+    return client.user.delete({ where });
   }
 
   async count(where?: Prisma.UserWhereInput, db?: DatabaseClient): Promise<number> {

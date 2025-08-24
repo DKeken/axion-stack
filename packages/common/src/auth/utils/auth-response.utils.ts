@@ -1,6 +1,6 @@
-import type { Response } from 'express';
-
 import { AuthCookieUtils } from '../../utils/auth-cookies';
+
+import type { Response } from 'express';
 
 /**
  * Utility for handling authentication responses in microservice architecture

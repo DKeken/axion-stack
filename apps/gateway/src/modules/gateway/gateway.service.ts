@@ -1,8 +1,9 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { AuthResponseUtils, JwtValidationService } from '@repo/common';
 import { firstValueFrom, timeout } from 'rxjs';
+
+import { ServiceDiscoveryService } from '../service-discovery/service-discovery.service';
 
 import type { AppConfig } from '@/config/configuration';
 import type { MicroserviceRequest, MicroserviceResponse } from '@repo/common/types';
@@ -11,48 +12,29 @@ import type { Request, Response } from 'express';
 @Injectable()
 export class GatewayService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(GatewayService.name);
-  private authClient!: ClientProxy;
-  private userClient!: ClientProxy;
 
   constructor(
     private readonly configService: ConfigService<AppConfig>,
-    private readonly jwtValidationService: JwtValidationService
+    private readonly jwtValidationService: JwtValidationService,
+    private readonly serviceDiscovery: ServiceDiscoveryService
   ) {}
 
   async onModuleInit(): Promise<void> {
-    // Create microservice clients
-    this.authClient = ClientProxyFactory.create({
-      transport: Transport.RMQ,
-      options: {
-        urls: [this.configService.get('RABBITMQ_URL') ?? 'amqp://localhost:5672'],
-        queue: 'auth_service_queue',
-        queueOptions: {
-          durable: true,
-        },
-      },
-    });
-
-    this.userClient = ClientProxyFactory.create({
-      transport: Transport.RMQ,
-      options: {
-        urls: [this.configService.get('RABBITMQ_URL') ?? 'amqp://localhost:5672'],
-        queue: 'user_service_queue',
-        queueOptions: {
-          durable: true,
-        },
-      },
-    });
-
-    // Connect to microservices
-    await Promise.all([this.authClient.connect(), this.userClient.connect()]);
-
-    this.logger.log('Gateway service connected to microservices');
+    // Service discovery handles client connections
+    this.logger.log('🌐 Gateway service initialized with dynamic service discovery');
   }
 
   async proxyToService(serviceName: string, req: Request, res: Response): Promise<void> {
     try {
+      const apiPrefix = this.configService.get('API_PREFIX', { infer: true });
+
       // Remove the API prefix and service name from the path
-      const servicePath = req.path.replace(`/api/v1/${serviceName}`, '') || '/';
+      let servicePath = req.path.replace(`${apiPrefix}/${serviceName}`, '');
+
+      // Handle the case where we have exact match (e.g., /api/v1/users -> '')
+      if (!servicePath) {
+        servicePath = '/';
+      }
 
       // Prepare headers (exclude sensitive/internal headers)
       const headers: Record<string, string> = {};
@@ -81,28 +63,40 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
         user: user ?? undefined,
       };
 
-      this.logger.debug(
-        `Gateway request: ${req.method} ${req.path} -> ${serviceName}${servicePath}`
-      );
-
-      const client = this.getClientForService(serviceName);
+      const client = this.serviceDiscovery.getClient(serviceName);
 
       if (!client) {
-        res.status(404).json({ error: 'Service not found' });
+        res.status(503).json({
+          error: 'Service unavailable',
+          message: `Service '${serviceName}' is not available or not registered`,
+          availableServices: this.serviceDiscovery.getAvailableServices(),
+        });
         return;
       }
 
-      // Route to appropriate message pattern based on path and method
-      const messagePattern = this.getMessagePattern(serviceName, servicePath, req.method);
+      // Route to appropriate message pattern using dynamic routing
+      const routeMatch = this.serviceDiscovery.findRoute(serviceName, servicePath, req.method);
 
-      if (!messagePattern) {
-        res.status(404).json({ error: 'Endpoint not found' });
+      if (!routeMatch) {
+        const availableRoutes =
+          this.serviceDiscovery.getServiceInfo(serviceName)?.capabilities || [];
+
+        res.status(404).json({
+          error: 'Endpoint not found',
+          message: `No route found for ${req.method} ${servicePath} in service '${serviceName}'`,
+          availableCapabilities: availableRoutes,
+        });
         return;
+      }
+
+      // Add path parameters to request if any
+      if (routeMatch.pathParams) {
+        microserviceRequest.pathParams = routeMatch.pathParams;
       }
 
       // Send message to microservice with timeout
       const response: MicroserviceResponse = await firstValueFrom(
-        client.send<MicroserviceResponse>(messagePattern, microserviceRequest).pipe(
+        client.send<MicroserviceResponse>(routeMatch.messagePattern, microserviceRequest).pipe(
           timeout(30000) // 30 seconds timeout
         )
       );
@@ -121,10 +115,13 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       } else {
         // Handle authentication cookies for auth endpoints
         if (serviceName === 'auth') {
-          if (
-            AuthResponseUtils.shouldSetAuthCookies(servicePath, req.method, response.status) &&
-            response.data
-          ) {
+          const shouldSet = AuthResponseUtils.shouldSetAuthCookies(
+            servicePath,
+            req.method,
+            response.status
+          );
+
+          if (shouldSet && response.data) {
             AuthResponseUtils.handleAuthCookies(response.data, res);
           }
           AuthResponseUtils.handleLogoutCookies(servicePath, req.method, response.status, res);
@@ -151,41 +148,8 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private getClientForService(serviceName: string): ClientProxy | null {
-    switch (serviceName) {
-      case 'auth':
-        return this.authClient;
-      case 'users':
-        return this.userClient;
-      default:
-        return null;
-    }
-  }
-
-  private getMessagePattern(serviceName: string, path: string, method: string): string | null {
-    // Auth service patterns based on ts-rest contract
-    if (serviceName === 'auth') {
-      if (path === '/register' && method === 'POST') return 'auth.register';
-      if (path === '/login' && method === 'POST') return 'auth.login';
-      if (path === '/refresh' && method === 'POST') return 'auth.refresh';
-      if (path === '/logout' && method === 'POST') return 'auth.logout';
-      if (path === '/profile' && method === 'GET') return 'auth.profile';
-    }
-
-    // Users service patterns based on ts-rest contract
-    if (serviceName === 'users') {
-      if (path === '/' && method === 'GET') return 'users.list';
-      if (path === '/' && method === 'POST') return 'users.create';
-      if (path.match(/^\/\d+$/) && method === 'GET') return 'users.get';
-      if (path.match(/^\/\d+$/) && method === 'PUT') return 'users.update';
-      if (path.match(/^\/\d+$/) && method === 'DELETE') return 'users.delete';
-    }
-
-    return null;
-  }
-
   async onModuleDestroy(): Promise<void> {
-    // Clean up connections
-    await Promise.all([this.authClient?.close(), this.userClient?.close()]);
+    // Service discovery handles cleanup
+    this.logger.log('🔴 Gateway service shutting down');
   }
 }

@@ -27,6 +27,8 @@ export interface MicroserviceRequest {
   headers: Record<string, string>;
   body?: unknown;
   user?: MicroserviceUser;
+  /** Path parameters extracted from route (e.g., { id: "123" } from /users/:id) */
+  pathParams?: Record<string, string>;
 }
 
 export interface MicroserviceResponse<T = unknown> {

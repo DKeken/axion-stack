@@ -80,7 +80,7 @@ axion_perf_first_contentful_paint   # Метрики производитель�
 ```bash
 BASE_URL=http://localhost:5173                    # Frontend URL
 GATEWAY_URL=http://localhost:3000/api            # Gateway API
-AUTH_USERNAME=admin@axion.dev                    # Тестовые данные
+AUTH_USERNAME=admin@${RABBITMQ_QUEUE_PREFIX}.dev  # Тестовые данные (использует переменную окружения для префикса)
 AUTH_PASSWORD=admin123
 PROMETHEUS_PUSHGATEWAY_URL=http://localhost:9091  # Метрики
 ```

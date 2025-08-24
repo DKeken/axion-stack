@@ -22,6 +22,10 @@
     "target": "ES2022",
     "allowJs": true,
 
+    // Decorator support (for imported packages)
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
     // Качество кода (смягчены для совместимости)
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

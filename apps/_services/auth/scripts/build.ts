@@ -1,6 +1,6 @@
 import { $ } from 'bun';
 
-console.log('🔨 Building Auth Service...');
+// Building Auth Service
 
 try {
   // Clean dist directory
@@ -9,8 +9,8 @@ try {
   // Run TypeScript compiler
   await $`tsc`;
 
-  console.log('✅ Auth Service build completed successfully!');
+  // Auth Service build completed successfully
 } catch (error) {
-  console.error('❌ Build failed:', error);
+  // Build failed
   process.exit(1);
 }

@@ -16,7 +16,8 @@ setup('authenticate', async ({ page }) => {
   await page.locator('form').waitFor({ state: 'visible', timeout: 30000 });
 
   // Fill in the login form for Axion Stack
-  await page.fill('input[type="email"]', process.env.AUTH_USERNAME || 'admin@axion.dev');
+  const defaultUsername = `admin@${process.env.RABBITMQ_QUEUE_PREFIX || 'axion'}.dev`;
+  await page.fill('input[type="email"]', process.env.AUTH_USERNAME || defaultUsername);
   await page.fill('input[type="password"]', process.env.AUTH_PASSWORD || 'admin123');
 
   // Click the login button

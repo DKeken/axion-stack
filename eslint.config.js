@@ -25,6 +25,7 @@ export default [
       '**/app/paraglide/**',
       '**/src/paraglide/**',
       '**/styles/hero.js',
+      '**/.output/**',
     ],
   },
 

@@ -41,12 +41,12 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
     });
 
     if (!user) {
-      this.logger.warn(`❌ User not found: ${userId}`);
+      this.logger.warn('❌ User not found');
       throw new UnauthorizedException('User not found');
     }
 
     if (user.email !== email) {
-      this.logger.warn('❌ Email mismatch:', { userEmail: user.email, tokenEmail: email });
+      this.logger.warn('❌ Token email mismatch detected');
       throw new UnauthorizedException('Token email mismatch');
     }
 
