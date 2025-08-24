@@ -1,3 +1,9 @@
+## [1.0.7](https://github.com/DKeken/axion-stack/compare/v1.0.6...v1.0.7) (2025-08-24)
+
+### 🔧 Chores
+
+* update dependencies and enhance metrics integration ([9df522c](https://github.com/DKeken/axion-stack/commit/9df522ce20e5fc1bd3bd1c54604aaa3d38794efc))
+
 ## [1.0.6](https://github.com/DKeken/axion-stack/compare/v1.0.5...v1.0.6) (2025-08-24)
 
 ### 🔨 Code Refactoring
