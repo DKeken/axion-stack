@@ -17,7 +17,8 @@
 [![Turborepo](https://img.shields.io/badge/Built%20with-Turborepo-ef4444.svg)](https://turbo.build/)
 [![GitHub stars](https://img.shields.io/github/stars/DKeken/axion-stack?style=social)](https://github.com/DKeken/axion-stack/stargazers)
 
-<img width="600" alt="Architecture Overview" src="https://github.com/user-attachments/assets/bc3995c1-6321-45a4-8d09-0f451ac13421" />
+<img width="600" alt="Architecture Overview" src="https://github.com/user-attachments/assets/4ce94297-a263-4ae6-99f9-0d1668d5b8c9" />
+
 
 </div>
 
