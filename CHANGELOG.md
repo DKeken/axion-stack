@@ -1,3 +1,9 @@
+## [1.0.6](https://github.com/DKeken/axion-stack/compare/v1.0.5...v1.0.6) (2025-08-24)
+
+### 🔨 Code Refactoring
+
+* streamline service discovery configuration and enhance logging ([8f6bc73](https://github.com/DKeken/axion-stack/commit/8f6bc73568fd2bfda62324c0d16eefab9087bb3f))
+
 ## [1.0.5](https://github.com/DKeken/axion-stack/compare/v1.0.4...v1.0.5) (2025-08-24)
 
 ### 🔨 Code Refactoring
