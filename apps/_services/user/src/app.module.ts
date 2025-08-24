@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, DiscoveryModule } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import {
   PrismaExceptionFilter,
   ServiceRegistryModule,
   MicroserviceRegistryService,
   ContractDiscoveryService,
   createServiceDiscoveryConfig,
+  MetricsModule,
+  MicroserviceMetricsInterceptor,
 } from '@repo/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
@@ -25,6 +27,7 @@ import { UsersModule } from './modules/users/users.module';
     ServiceRegistryModule.forRootAsync({
       useFactory: () => createServiceDiscoveryConfig(),
     }),
+    MetricsModule, // 📊 Metrics for Pushgateway
     UsersModule,
     HealthModule,
   ],
@@ -33,6 +36,13 @@ import { UsersModule } from './modules/users/users.module';
     ContractDiscoveryService,
     MicroserviceRegistryService,
 
+    // Global interceptors
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MicroserviceMetricsInterceptor, // 📊 Collect RPC metrics
+    },
+
+    // Global filters
     {
       provide: APP_FILTER,
       useClass: PrismaExceptionFilter,

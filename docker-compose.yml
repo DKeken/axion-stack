@@ -1,14 +1,15 @@
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database - Internal only, no external ports
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: nestjs_api
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure-postgres-password-2024}
+    # No external ports exposed - internal network only
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -18,36 +19,48 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis for caching and sessions
+  # Redis for caching and sessions - Internal only
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass password
-    ports:
-      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-secure-redis-password-2024}
+    # No external ports exposed - internal network only
+    expose:
+      - "6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "password", "ping"]
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "--no-auth-warning",
+          "-a",
+          "${REDIS_PASSWORD:-secure-redis-password-2024}",
+          "ping",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Redis Commander - Modern Redis Admin Web UI
+  # Redis Commander - Admin UI (Development only)
   redis-commander:
     image: rediscommander/redis-commander:latest
     restart: unless-stopped
     environment:
-      REDIS_HOSTS: "local:redis:6379:0:password"
+      REDIS_HOSTS: "local:redis:6379:0:${REDIS_PASSWORD:-secure-redis-password-2024}"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: password
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
       REDIS_DB: 0
-      HTTP_USER: admin
-      HTTP_PASSWORD: admin
+      HTTP_USER: ${REDIS_ADMIN_USER:-admin}
+      HTTP_PASSWORD: ${REDIS_ADMIN_PASSWORD:-secure-redis-admin-2024}
       PORT: 8081
-    ports:
-      - "8081:8081"
+    # Only expose in development - comment out for production
+    # ports:
+    #   - "8081:8081"
+    expose:
+      - "8081"
     depends_on:
       redis:
         condition: service_healthy
@@ -57,18 +70,21 @@ services:
       timeout: 10s
       retries: 3
 
-  # RabbitMQ Message Broker
+  # RabbitMQ Message Broker - Secured
   rabbitmq:
     image: rabbitmq:3-management-alpine
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-axion_admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}
       RABBITMQ_DEFAULT_VHOST: /
-    ports:
-      - "5672:5672" # AMQP port
-      - "15672:15672" # Management UI port
-      - "15692:15692" # Prometheus metrics port
+    # AMQP port exposed for microservices communication
+    expose:
+      - "5672"
+      - "15692" # Prometheus metrics (internal only)
+    # Management UI only in development
+    # ports:
+    #   - "15672:15672" # Comment out for production
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
@@ -83,12 +99,16 @@ services:
         rabbitmq-server
       "
 
-  # Prometheus - Metrics Collection and Storage
+  # Prometheus - Metrics Collection and Storage (Internal only)
   prometheus:
     image: prom/prometheus:latest
     restart: unless-stopped
-    ports:
-      - "9090:9090"
+    # Internal only - no external access to metrics
+    expose:
+      - "9090"
+    # Only expose in development
+    # ports:
+    #   - "9090:9090"
     volumes:
       - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
@@ -105,12 +125,16 @@ services:
       timeout: 10s
       retries: 3
 
-  # Pushgateway - Metrics Gateway for Batch Jobs
+  # Pushgateway - Metrics Gateway for Batch Jobs (Internal only)
   pushgateway:
     image: prom/pushgateway:latest
     restart: unless-stopped
-    ports:
-      - "9091:9091"
+    # Internal only - microservices push metrics here
+    expose:
+      - "9091"
+    # Only expose in development
+    # ports:
+    #   - "9091:9091"
     volumes:
       - pushgateway_data:/var/lib/pushgateway
     healthcheck:
@@ -119,20 +143,26 @@ services:
       timeout: 10s
       retries: 3
 
-  # Grafana - Metrics Visualization Dashboard
+  # Grafana - Metrics Visualization Dashboard (Secured)
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
+    # External access with secure credentials
     ports:
       - "3333:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-secure-grafana-admin-2024}
       GF_USERS_ALLOW_SIGN_UP: false
       GF_INSTALL_PLUGINS: grafana-piechart-panel
+      # Security enhancements
+      GF_SECURITY_DISABLE_GRAVATAR: true
+      GF_SECURITY_COOKIE_SECURE: true
+      GF_ANALYTICS_REPORTING_ENABLED: false
+      GF_ANALYTICS_CHECK_FOR_UPDATES: false
     depends_on:
       prometheus:
         condition: service_healthy
@@ -152,18 +182,19 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?schema=public"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: password
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
       REDIS_DB: 0
       REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
-      RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
-      JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
-      JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-axion_admin}:${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}@rabbitmq:5672/"
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-development-access-secret-key-32-chars-minimum}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-refresh-secret-key-32-chars-minimum}
       CORS_ORIGIN: "*"
       PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
+      METRICS_AUTH_TOKEN: "secure-metrics-token-2024"
     ports:
       - "3001:3001"
     volumes:
@@ -189,17 +220,18 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
+      SERVICE_NAME: auth
       # PORT removed - microservice only via RabbitMQ
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?schema=public"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: password
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
       REDIS_DB: 0
       REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
-      RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
-      JWT_ACCESS_SECRET: "development-access-secret-key-32-chars-minimum"
-      JWT_REFRESH_SECRET: "development-refresh-secret-key-32-chars-minimum"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-axion_admin}:${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}@rabbitmq:5672/"
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-development-access-secret-key-32-chars-minimum}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-refresh-secret-key-32-chars-minimum}
       PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
     # No HTTP ports exposed - microservice only via RabbitMQ
     volumes:
@@ -225,15 +257,16 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
+      SERVICE_NAME: user
       # PORT removed - microservice only via RabbitMQ
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/nestjs_api?schema=public"
+      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?schema=public"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: password
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
       REDIS_DB: 0
       REDIS_KEY_PREFIX: "axion:"
       REDIS_TTL: 3600
-      RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672/"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-axion_admin}:${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}@rabbitmq:5672/"
       PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
     # No HTTP ports exposed - microservice only via RabbitMQ
     volumes:
@@ -250,12 +283,13 @@ services:
         condition: service_healthy
     command: bun run start:dev
 
-  # Node Exporter - System Metrics
+  # Node Exporter - System Metrics (Internal only)
   node-exporter:
     image: prom/node-exporter:latest
     restart: unless-stopped
-    ports:
-      - "9100:9100"
+    # Internal only - prometheus scrapes metrics
+    expose:
+      - "9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -271,15 +305,16 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis Exporter - Redis Metrics
+  # Redis Exporter - Redis Metrics (Internal only)
   redis-exporter:
     image: oliver006/redis_exporter:latest
     restart: unless-stopped
-    ports:
-      - "9121:9121"
+    # Internal only - prometheus scrapes metrics
+    expose:
+      - "9121"
     environment:
       REDIS_ADDR: "redis://redis:6379"
-      REDIS_PASSWORD: "password"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
     depends_on:
       redis:
         condition: service_healthy
@@ -289,14 +324,15 @@ services:
       timeout: 10s
       retries: 3
 
-  # PostgreSQL Exporter - Database Metrics
+  # PostgreSQL Exporter - Database Metrics (Internal only)
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     restart: unless-stopped
-    ports:
-      - "9187:9187"
+    # Internal only - prometheus scrapes metrics
+    expose:
+      - "9187"
     environment:
-      DATA_SOURCE_NAME: "postgresql://postgres:password@postgres:5432/nestjs_api?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?sslmode=disable"
     depends_on:
       postgres:
         condition: service_healthy

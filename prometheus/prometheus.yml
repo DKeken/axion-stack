@@ -3,6 +3,8 @@ global:
   evaluation_interval: 15s
   external_labels:
     monitor: "axion-stack-monitor"
+  # Security settings
+  query_log_file: "/prometheus/query.log"
 
 rule_files:
   - "alert_rules.yml"
@@ -25,29 +27,19 @@ scrape_configs:
     honor_labels: true
     metrics_path: /metrics
 
-  # API Gateway Service
+  # API Gateway Service (running locally) - Protected with authorization
   - job_name: "api-gateway"
     static_configs:
-      - targets: ["api:3001"]
+      - targets: ["host.docker.internal:3001"]
     metrics_path: /metrics
     scrape_interval: 10s
     scrape_timeout: 5s
+    authorization:
+      type: Bearer
+      credentials: "secure-metrics-token-2024"
 
-  # Auth Microservice
-  - job_name: "auth-service"
-    static_configs:
-      - targets: ["auth-service:3002"]
-    metrics_path: /metrics
-    scrape_interval: 10s
-    scrape_timeout: 5s
-
-  # User Microservice
-  - job_name: "user-service"
-    static_configs:
-      - targets: ["user-service:3003"]
-    metrics_path: /metrics
-    scrape_interval: 10s
-    scrape_timeout: 5s
+  # Note: Auth and User microservices use RabbitMQ only and push metrics to Pushgateway
+  # Their metrics are collected via pushgateway job above
 
   # PostgreSQL Exporter
   - job_name: "postgres"

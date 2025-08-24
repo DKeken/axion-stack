@@ -5,6 +5,7 @@ export * from './dto';
 export * from './filters';
 export * from './health';
 export * from './interceptors';
+export * from './metrics';
 export * from './pipes';
 export * from './service-discovery';
 export * from './types/microservices.types';

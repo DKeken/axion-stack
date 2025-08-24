@@ -13,6 +13,8 @@ import { PrismaService, RedisModule } from '@repo/infrastructure';
 import { validationSchema } from './config/validation';
 import { GatewayModule } from './modules/gateway/gateway.module';
 import { HealthModule } from './modules/health/health.module';
+import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
+import { MetricsModule } from './modules/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { HealthModule } from './modules/health/health.module';
     // Feature modules
     GatewayModule,
     HealthModule,
+    MetricsModule,
   ],
   providers: [
     // Global database service
@@ -59,6 +62,10 @@ import { HealthModule } from './modules/health/health.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor, // Transform responses consistently
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpMetricsInterceptor, // Collect HTTP metrics
     },
 
     // Global exception filters

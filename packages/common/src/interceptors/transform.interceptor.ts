@@ -32,6 +32,16 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T> |
           return data;
         }
 
+        // Skip transformation for metrics endpoint
+        if (request.url === '/metrics') {
+          return data;
+        }
+
+        // Skip transformation for health endpoints
+        if (request.url.includes('/health')) {
+          return data;
+        }
+
         // Skip transformation for ts-rest responses with specific structure
         if (data && typeof data === 'object' && 'status' in data && 'body' in data) {
           return data;

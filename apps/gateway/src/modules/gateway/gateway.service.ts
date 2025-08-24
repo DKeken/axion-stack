@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthResponseUtils, JwtValidationService } from '@repo/common';
 import { firstValueFrom, timeout } from 'rxjs';
 
+import { MetricsService } from '../metrics/metrics.service';
 import { ServiceDiscoveryService } from '../service-discovery/service-discovery.service';
 
 import type { AppConfig } from '@/config/configuration';
@@ -16,7 +17,8 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly configService: ConfigService<AppConfig>,
     private readonly jwtValidationService: JwtValidationService,
-    private readonly serviceDiscovery: ServiceDiscoveryService
+    private readonly serviceDiscovery: ServiceDiscoveryService,
+    private readonly metricsService: MetricsService
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -25,6 +27,8 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   }
 
   async proxyToService(serviceName: string, req: Request, res: Response): Promise<void> {
+    const startTime = Date.now();
+
     try {
       const apiPrefix = this.configService.get('API_PREFIX', { infer: true });
 
@@ -66,6 +70,14 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       const client = this.serviceDiscovery.getClient(serviceName);
 
       if (!client) {
+        const duration = (Date.now() - startTime) / 1000;
+        this.metricsService.recordMicroserviceRequest(
+          serviceName,
+          req.method,
+          'unavailable',
+          duration
+        );
+
         res.status(503).json({
           error: 'Service unavailable',
           message: `Service '${serviceName}' is not available or not registered`,
@@ -78,6 +90,14 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       const routeMatch = this.serviceDiscovery.findRoute(serviceName, servicePath, req.method);
 
       if (!routeMatch) {
+        const duration = (Date.now() - startTime) / 1000;
+        this.metricsService.recordMicroserviceRequest(
+          serviceName,
+          req.method,
+          'not_found',
+          duration
+        );
+
         const availableRoutes =
           this.serviceDiscovery.getServiceInfo(serviceName)?.capabilities || [];
 
@@ -102,7 +122,11 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       );
 
       // Handle microservice response
+      const duration = (Date.now() - startTime) / 1000;
+
       if (response.error) {
+        this.metricsService.recordMicroserviceRequest(serviceName, req.method, 'error', duration);
+
         // Clear auth cookies on auth failures
         AuthResponseUtils.handleErrorCookies(
           serviceName,
@@ -113,6 +137,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
         );
         res.status(response.status || 500).json({ error: response.error });
       } else {
+        this.metricsService.recordMicroserviceRequest(serviceName, req.method, 'success', duration);
         // Handle authentication cookies for auth endpoints
         if (serviceName === 'auth') {
           const shouldSet = AuthResponseUtils.shouldSetAuthCookies(
@@ -130,15 +155,29 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
         res.status(response.status || 200).json(response.data || response);
       }
     } catch (error) {
+      const duration = (Date.now() - startTime) / 1000;
+
       this.logger.error(`Error in gateway for service ${serviceName}:`, error);
 
       if (!res.headersSent) {
         if (error instanceof Error && error.message.includes('Timeout')) {
+          this.metricsService.recordMicroserviceRequest(
+            serviceName,
+            req.method,
+            'timeout',
+            duration
+          );
           res.status(504).json({
             error: 'Gateway Timeout',
             message: `Request to ${serviceName} service timed out`,
           });
         } else {
+          this.metricsService.recordMicroserviceRequest(
+            serviceName,
+            req.method,
+            'gateway_error',
+            duration
+          );
           res.status(502).json({
             error: 'Bad Gateway',
             message: `Failed to process request to ${serviceName} service`,
