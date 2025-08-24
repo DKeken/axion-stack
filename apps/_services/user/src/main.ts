@@ -27,6 +27,6 @@ async function bootstrap() {
   console.log(`🚀 User microservice is listening on queue: ${queueName}`);
 }
 
-bootstrap().catch((error) => {
+bootstrap().catch((_error) => {
   process.exit(1);
 });

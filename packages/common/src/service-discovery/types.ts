@@ -25,12 +25,6 @@ export interface ServiceRegistration {
   port?: number;
   /** Service host (if applicable) */
   host?: string;
-  /** Marked as deprecated during HMR cleanup */
-  deprecated?: boolean;
-  /** When the service was deprecated */
-  deprecatedAt?: string;
-  /** PID that deprecated this service */
-  deprecatedBy?: number;
 }
 
 export interface ServiceDiscoveryConfig {

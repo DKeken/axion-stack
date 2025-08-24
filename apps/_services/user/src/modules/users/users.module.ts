@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
 import { UsersMicroserviceController } from './users-microservice.controller';
-import { UsersController } from './users.controller';
 import { UsersRepository } from './users.repository';
 import { UsersService } from './users.service';
 

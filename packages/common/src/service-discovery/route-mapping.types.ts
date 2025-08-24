@@ -28,28 +28,3 @@ export interface RouteMatch {
   route: RoutePattern;
   pathParams?: Record<string, string>;
 }
-
-/**
- * Dynamic route mapper interface
- */
-export interface RouteMapper {
-  /**
-   * Register routes for a service
-   */
-  registerServiceRoutes(config: ServiceRouteConfig): void;
-
-  /**
-   * Find matching route for HTTP request
-   */
-  findRoute(serviceName: string, path: string, method: string): RouteMatch | null;
-
-  /**
-   * Get all registered routes for a service
-   */
-  getServiceRoutes(serviceName: string): RoutePattern[];
-
-  /**
-   * Check if service supports a specific capability
-   */
-  hasCapability(serviceName: string, capability: string): boolean;
-}

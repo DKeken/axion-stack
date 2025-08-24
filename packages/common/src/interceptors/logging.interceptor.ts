@@ -28,7 +28,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
     const { method, url, ip, headers } = request;
-    const userAgent = this.sanitizeUserAgent(headers['user-agent'] ?? '');
+    const _userAgent = this.sanitizeUserAgent(headers['user-agent'] ?? '');
     const startTime = Date.now();
 
     // Log request (with sanitized data)

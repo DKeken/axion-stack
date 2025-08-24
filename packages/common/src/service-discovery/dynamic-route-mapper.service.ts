@@ -1,14 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import type {
-  RouteMapper,
-  RouteMatch,
-  RoutePattern,
-  ServiceRouteConfig,
-} from './route-mapping.types';
+import type { RouteMatch } from './route-mapping.types';
+import type { RoutePattern, ServiceRouteConfig } from '@repo/contracts';
 
 @Injectable()
-export class DynamicRouteMapperService implements RouteMapper {
+export class DynamicRouteMapperService {
   private readonly logger = new Logger(DynamicRouteMapperService.name);
   private serviceRoutes = new Map<string, RoutePattern[]>();
   private serviceCapabilities = new Map<string, Set<string>>();
@@ -23,16 +19,11 @@ export class DynamicRouteMapperService implements RouteMapper {
     const capabilities = new Set(config.routes.map((route) => route.messagePattern));
     this.serviceCapabilities.set(config.serviceName, capabilities);
 
-    this.logger.log(
+    this.logger.debug(
       `📋 Registered ${config.routes.length} routes for service '${config.serviceName}': [${Array.from(
         capabilities
       ).join(', ')}]`
     );
-
-    // Log actual route patterns for debugging
-    config.routes.forEach((route) => {
-      this.logger.debug(`   ${route.method} ${route.pathPattern} -> ${route.messagePattern}`);
-    });
   }
 
   /**
@@ -48,13 +39,6 @@ export class DynamicRouteMapperService implements RouteMapper {
       return null;
     }
 
-    this.logger.debug(
-      `Looking for: ${method} ${path} in service '${serviceName}' (${routes.length} routes available)`
-    );
-    routes.forEach((route) => {
-      this.logger.debug(`  Checking: ${route.method} ${route.pathPattern}`);
-    });
-
     for (const route of routes) {
       if (route.method.toLowerCase() !== method.toLowerCase()) {
         continue;
@@ -62,10 +46,6 @@ export class DynamicRouteMapperService implements RouteMapper {
 
       const match = this.matchPath(route.pathPattern, path);
       if (match.matches) {
-        this.logger.debug(
-          `Route match: ${method} ${path} -> ${route.messagePattern} (service: ${serviceName})`
-        );
-
         return {
           messagePattern: route.messagePattern,
           route,
@@ -74,7 +54,6 @@ export class DynamicRouteMapperService implements RouteMapper {
       }
     }
 
-    this.logger.debug(`No route match found for: ${method} ${path} (service: ${serviceName})`);
     return null;
   }
 

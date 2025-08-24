@@ -26,11 +26,8 @@ export class MicroserviceRegistryService implements OnModuleInit, OnModuleDestro
     const serviceVersion = this.getServiceVersion();
     const queueName = this.getQueueName(serviceName);
     const capabilities = this.getServiceCapabilities();
-    const isDevelopment = this.configService.get('NODE_ENV') === 'development';
 
-    this.logger.log(
-      `🚀 [INIT] Initializing microservice ${serviceName}${isDevelopment ? ' (HMR Mode)' : ''}`
-    );
+    this.logger.log(`🚀 [INIT] Initializing microservice ${serviceName}`);
 
     const registration: Omit<ServiceRegistration, 'instanceId' | 'registeredAt' | 'lastHeartbeat'> =
       {
@@ -42,7 +39,6 @@ export class MicroserviceRegistryService implements OnModuleInit, OnModuleDestro
         metadata: {
           port: this.configService.get('PORT'),
           nodeEnv: this.configService.get('NODE_ENV'),
-          hmr: isDevelopment,
           pid: process.pid,
         },
         host: 'localhost', // или получить из конфига

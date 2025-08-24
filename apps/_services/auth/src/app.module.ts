@@ -6,6 +6,7 @@ import {
   ServiceRegistryModule,
   MicroserviceRegistryService,
   ContractDiscoveryService,
+  createServiceDiscoveryConfig,
 } from '@repo/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
@@ -25,12 +26,7 @@ import { HealthModule } from './modules/health/health.module';
     RedisModule,
     DiscoveryModule, // 🔍 NestJS Discovery для автоматического обнаружения MessagePattern
     ServiceRegistryModule.forRootAsync({
-      useFactory: () => ({
-        registryPrefix: 'axion:services',
-        heartbeatInterval: 30000,
-        serviceTtl: 120, // Унифицируем TTL для стабильности
-        enableCleanup: true,
-      }),
+      useFactory: () => createServiceDiscoveryConfig(),
     }),
 
     // Feature modules

@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
+import { APP_FILTER, DiscoveryModule } from '@nestjs/core';
 import {
   PrismaExceptionFilter,
   ServiceRegistryModule,
   MicroserviceRegistryService,
   ContractDiscoveryService,
+  createServiceDiscoveryConfig,
 } from '@repo/common';
 import { PrismaService, RedisModule } from '@repo/infrastructure';
 
@@ -22,12 +23,7 @@ import { UsersModule } from './modules/users/users.module';
     RedisModule,
     DiscoveryModule,
     ServiceRegistryModule.forRootAsync({
-      useFactory: () => ({
-        registryPrefix: 'axion:services',
-        heartbeatInterval: 30000,
-        serviceTtl: 120,
-        enableCleanup: true,
-      }),
+      useFactory: () => createServiceDiscoveryConfig(),
     }),
     UsersModule,
     HealthModule,
