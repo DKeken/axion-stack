@@ -1,3 +1,9 @@
+## [1.0.5](https://github.com/DKeken/axion-stack/compare/v1.0.4...v1.0.5) (2025-08-24)
+
+### 🔨 Code Refactoring
+
+* update microservices logic to ServiceDiscovery and enhance service configurations ([e550cd9](https://github.com/DKeken/axion-stack/commit/e550cd9955ee2c9f802d98f526516baaf0c5986b))
+
 ## [1.0.4](https://github.com/DKeken/axion-stack/compare/v1.0.3...v1.0.4) (2025-08-22)
 
 ### 🔨 Code Refactoring
