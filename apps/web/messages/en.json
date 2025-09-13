@@ -1,12 +1,1 @@
-{
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "example_message": "Hello world {username}",
-  "server_message": "Server message {emoji}",
-  "nav": {
-    "home": "Home",
-    "billing": "Billing",
-    "docs": "Docs",
-    "tools": "Tools",
-    "noTools": "No tools available"
-  }
-}
+{"$schema":"https://inlang.com/schema/inlang-message-format","example_message":"Hello world {username}","server_message":"Server message {emoji}","nav":{"home":"Home","billing":"Billing","docs":"Docs","tools":"Tools","noTools":"No tools available"}}

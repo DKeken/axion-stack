@@ -1,11 +1,18 @@
+'use client';
+
 import { type FC, useMemo } from 'react';
 
-import { Button } from '@heroui/button';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@heroui/dropdown';
-import { Spinner } from '@heroui/spinner';
 import { useTheme } from 'next-themes';
 
+import { Button } from '~/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
 import { useHydration } from '~/hooks/use-hydration';
+import { cn } from '~/lib/utils';
 
 const getThemeIcon = (theme: 'light' | 'dark') => {
   switch (theme) {
@@ -27,10 +34,10 @@ const getThemeLabel = (theme: 'light' | 'dark'): string => {
 
 export interface ThemeSwitchProps {
   className?: string;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'default';
 }
 
-export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className, size = 'md' }) => {
+export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className, size = 'default' }) => {
   const isHydrated = useHydration();
   const { theme, resolvedTheme, setTheme } = useTheme();
 
@@ -54,8 +61,13 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className, size = 'md' }) =>
   // Prevent Hydration Mismatch
   if (!isHydrated) {
     return (
-      <Button size={size} variant='flat' aria-label='Change theme' isIconOnly={size === 'sm'}>
-        <Spinner size='sm' color='default' className='w-4 h-4' />
+      <Button
+        aria-label='Change theme'
+        className={size === 'sm' ? 'w-8 h-8 p-0' : ''}
+        size={size}
+        variant='outline'
+      >
+        <div className='bg-muted rounded animate-pulse w-4 h-4' />
       </Button>
     );
   }
@@ -71,28 +83,31 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className, size = 'md' }) =>
     );
 
   return (
-    <Dropdown className={className}>
-      <DropdownTrigger>
-        <Button size={size} variant='flat' aria-label='Change theme' isIconOnly={size === 'sm'}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label='Change theme'
+          className={cn(size === 'sm' ? 'w-8 h-8 p-0' : '', className)}
+          size={size}
+          variant='outline'
+        >
           {triggerContent}
         </Button>
-      </DropdownTrigger>
-      <DropdownMenu
-        aria-label='Select theme'
-        selectionMode='single'
-        selectedKeys={[currentTheme]}
-        onAction={(key) => {
-          const selectedTheme = String(key) as 'light' | 'dark';
-          handleThemeChange(selectedTheme);
-        }}
-      >
-        <DropdownItem key='light'>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end'>
+        <DropdownMenuItem
+          className={currentTheme === 'light' ? 'bg-accent' : ''}
+          onClick={() => handleThemeChange('light')}
+        >
           <div className='flex items-center gap-2'>☀️ Light</div>
-        </DropdownItem>
-        <DropdownItem key='dark'>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className={currentTheme === 'dark' ? 'bg-accent' : ''}
+          onClick={() => handleThemeChange('dark')}
+        >
           <div className='flex items-center gap-2'>🌙 Dark</div>
-        </DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

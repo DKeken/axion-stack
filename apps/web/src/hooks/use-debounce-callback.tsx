@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 
 import debounce from 'lodash.debounce';
@@ -16,12 +18,14 @@ interface ControlFunctions {
   isPending: () => boolean;
 }
 
-export type DebouncedState<T extends (...args: any) => ReturnType<T>> = ((
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DebouncedState<T extends (...args: any[]) => any> = ((
   ...args: Parameters<T>
 ) => ReturnType<T> | undefined) &
   ControlFunctions;
 
-export function useDebounceCallback<T extends (...args: any) => ReturnType<T>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useDebounceCallback<T extends (...args: any[]) => any>(
   func: T,
   delay = 500,
   options?: DebounceOptions
@@ -38,6 +42,7 @@ export function useDebounceCallback<T extends (...args: any) => ReturnType<T>>(
     const debouncedFuncInstance = debounce(func, delay, options);
 
     const wrappedFunc: DebouncedState<T> = (...args: Parameters<T>) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return debouncedFuncInstance(...args);
     };
 
@@ -50,6 +55,7 @@ export function useDebounceCallback<T extends (...args: any) => ReturnType<T>>(
     };
 
     wrappedFunc.flush = () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return debouncedFuncInstance.flush();
     };
 

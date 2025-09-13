@@ -1,7 +1,7 @@
-import { Button } from '@heroui/button';
-import { Card, CardBody, CardHeader } from '@heroui/card';
+import Link from 'next/link';
 
-import { Link } from '~/routes/__root';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader } from '~/components/ui/card';
 
 export function NotFound({ children }: { children?: React.ReactNode }) {
   return (
@@ -10,24 +10,24 @@ export function NotFound({ children }: { children?: React.ReactNode }) {
         <CardHeader>
           <h3 className='text-lg font-semibold'>Page not found</h3>
         </CardHeader>
-        <CardBody className='flex flex-col gap-4'>
+        <CardContent className='flex flex-col gap-4'>
           <div className='text-muted-foreground'>
             {children ?? <p>The page you are looking for does not exist.</p>}
           </div>
           <div className='flex items-center gap-2 flex-wrap'>
             <Button
-              variant='solid'
+              variant='default'
               onClick={() => {
                 window.history.back();
               }}
             >
               Go Back
             </Button>
-            <Button variant='flat'>
-              <Link to='/'>Start Over</Link>
+            <Button asChild variant='outline'>
+              <Link href='/'>Start Over</Link>
             </Button>
           </div>
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );

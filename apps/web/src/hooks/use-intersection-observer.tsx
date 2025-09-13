@@ -122,14 +122,16 @@ export function useIntersectionObserver({
     setRef(node ?? null);
   };
 
-  const result = [refCallback, !!state.isIntersecting, state.entry] as IntersectionReturn;
+  // Create result tuple with object properties
+  const resultTuple = [refCallback, !!state.isIntersecting, state.entry] as const;
+  const resultObject = {
+    ref: refCallback,
+    isIntersecting: !!state.isIntersecting,
+    entry: state.entry,
+  };
 
-  // Support object destructuring, by adding the specific values.
-  result.ref = refCallback;
-  result.isIntersecting = !!state.isIntersecting;
-  result.entry = state.entry;
-
-  return result;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return Object.assign(resultTuple, resultObject) as IntersectionReturn;
 }
 
 // Export types

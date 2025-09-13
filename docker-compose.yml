@@ -7,7 +7,9 @@ services:
       POSTGRES_DB: nestjs_api
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure-postgres-password-2024}
-    # No external ports exposed - internal network only
+    # External port exposed for development
+    ports:
+      - "5432:5432"
     expose:
       - "5432"
     volumes:
@@ -24,7 +26,9 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-secure-redis-password-2024}
-    # No external ports exposed - internal network only
+    # External port exposed for development
+    ports:
+      - "6379:6379"
     expose:
       - "6379"
     volumes:
@@ -79,12 +83,12 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}
       RABBITMQ_DEFAULT_VHOST: /
     # AMQP port exposed for microservices communication
+    ports:
+      - "5672:5672" # AMQP port for development
+      - "15672:15672" # Management UI for development
     expose:
       - "5672"
       - "15692" # Prometheus metrics (internal only)
-    # Management UI only in development
-    # ports:
-    #   - "15672:15672" # Comment out for production
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
@@ -132,9 +136,9 @@ services:
     # Internal only - microservices push metrics here
     expose:
       - "9091"
-    # Only expose in development
-    # ports:
-    #   - "9091:9091"
+    # External port exposed for development
+    ports:
+      - "9091:9091"
     volumes:
       - pushgateway_data:/var/lib/pushgateway
     healthcheck:
@@ -171,117 +175,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # API Application (development)
-  api:
-    build:
-      context: .
-      dockerfile: apps/gateway/Dockerfile
-      target: development
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      PORT: 3001
-      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?schema=public"
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
-      REDIS_DB: 0
-      REDIS_KEY_PREFIX: "axion:"
-      REDIS_TTL: 3600
-      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-axion_admin}:${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}@rabbitmq:5672/"
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-development-access-secret-key-32-chars-minimum}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-refresh-secret-key-32-chars-minimum}
-      CORS_ORIGIN: "*"
-      PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
-      METRICS_AUTH_TOKEN: "secure-metrics-token-2024"
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./apps/gateway:/app
-      - /app/node_modules
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      pushgateway:
-        condition: service_healthy
-    command: bun run start:dev
-
-  # Auth Service (microservice)
-  auth-service:
-    build:
-      context: .
-      dockerfile: apps/_services/auth/Dockerfile
-      target: development
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      SERVICE_NAME: auth
-      # PORT removed - microservice only via RabbitMQ
-      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?schema=public"
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
-      REDIS_DB: 0
-      REDIS_KEY_PREFIX: "axion:"
-      REDIS_TTL: 3600
-      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-axion_admin}:${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}@rabbitmq:5672/"
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-development-access-secret-key-32-chars-minimum}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-refresh-secret-key-32-chars-minimum}
-      PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
-    # No HTTP ports exposed - microservice only via RabbitMQ
-    volumes:
-      - ./apps/_services/auth:/app
-      - /app/node_modules
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      pushgateway:
-        condition: service_healthy
-    command: bun run start:dev
-
-  # User Service (microservice)
-  user-service:
-    build:
-      context: .
-      dockerfile: apps/_services/user/Dockerfile
-      target: development
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      SERVICE_NAME: user
-      # PORT removed - microservice only via RabbitMQ
-      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure-postgres-password-2024}@postgres:5432/nestjs_api?schema=public"
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure-redis-password-2024}
-      REDIS_DB: 0
-      REDIS_KEY_PREFIX: "axion:"
-      REDIS_TTL: 3600
-      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-axion_admin}:${RABBITMQ_PASSWORD:-secure-rabbitmq-password-2024}@rabbitmq:5672/"
-      PROMETHEUS_PUSHGATEWAY_URL: "http://pushgateway:9091"
-    # No HTTP ports exposed - microservice only via RabbitMQ
-    volumes:
-      - ./apps/_services/user:/app
-      - /app/node_modules
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      pushgateway:
-        condition: service_healthy
-    command: bun run start:dev
 
   # Node Exporter - System Metrics (Internal only)
   node-exporter:
@@ -353,4 +246,4 @@ volumes:
 
 networks:
   default:
-    name: nestjs-api-network
+    name: api-network

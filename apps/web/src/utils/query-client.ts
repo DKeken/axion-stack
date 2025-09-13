@@ -11,8 +11,12 @@ export function createQueryClient() {
         retry: (failureCount, error) => {
           // Don't retry on 4xx errors (client errors)
           if (error instanceof Error && 'status' in error) {
-            const status = (error as { status?: number })?.status;
-            if (status !== undefined && status >= 400 && status < 500) {
+            const errorWithStatus: { status?: unknown } = error;
+            if (
+              typeof errorWithStatus.status === 'number' &&
+              errorWithStatus.status >= 400 &&
+              errorWithStatus.status < 500
+            ) {
               return false;
             }
           }
@@ -29,5 +33,19 @@ export function createQueryClient() {
   });
 }
 
-// Create a stable query client instance
-export const queryClient = createQueryClient();
+// Create a stable query client instance for browser usage
+let browserQueryClient: QueryClient | undefined = undefined;
+
+export function getQueryClient(): QueryClient {
+  // Server: always make a new query client
+  if (typeof window === 'undefined') {
+    return createQueryClient();
+  }
+
+  // Browser: make a new query client if we don't already have one
+  if (!browserQueryClient) {
+    browserQueryClient = createQueryClient();
+  }
+
+  return browserQueryClient;
+}

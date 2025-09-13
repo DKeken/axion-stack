@@ -1,8 +1,26 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js"],
   "compilerOptions": {
-    // Строгие настройки TypeScript
+    // Next.js specific settings
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
     "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+
+    // Строгие настройки TypeScript
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
@@ -10,24 +28,11 @@
     "strictFunctionTypes": true,
     "useUnknownInCatchVariables": true,
 
-    // React и модули
-    "esModuleInterop": true,
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "verbatimModuleSyntax": true,
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "isolatedModules": true,
-    "resolveJsonModule": true,
-    "target": "ES2022",
-    "allowJs": true,
-
     // Decorator support (for imported packages)
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
-    // Качество кода (смягчены для совместимости)
-    "skipLibCheck": true,
+    // Качество кода
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
@@ -39,8 +44,8 @@
     "paths": {
       "~/*": ["./src/*"],
       "@web/*": ["./src/*"]
-    },
-    "noEmit": true
+    }
   },
-  "exclude": ["node_modules", "dist", ".output", "../../packages/database/src/generated/**/*"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "../../packages/database/src/generated/**/*"]
 }

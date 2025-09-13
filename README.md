@@ -293,7 +293,7 @@ graph TB
 </tr>
 <tr>
 <td><strong>⚛️ Frontend</strong></td>
-<td><code>React 19</code> • <code>TanStack Start</code> • <code>HeroUI</code></td>
+<td><code>React 19</code> • <code>Next.js</code> • <code>Shadcn</code></td>
 <td>Modern React with concurrent features</td>
 </tr>
 <tr>
